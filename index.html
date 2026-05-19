@@ -1,0 +1,2283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="VozReg">
+<meta name="theme-color" content="#1a8fc4">
+<title>VozRegistro</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&family=Pacifico&display=swap" rel="stylesheet">
+<style>
+[data-theme="morning"]  {--bg:#e8f4fb;--surface:#fff;--surface2:#f0f8ff;--border:#c5dff0;--header:#d0eaf8;--accent:#1a8fc4;--green:#1aa86e;--red:#e0455a;--gold:#d4860a;--blue:#1a8fc4;--purple:#7c5cbf;--text:#1a2e3d;--muted:#7a9aae;--shadow:0 2px 10px rgba(26,143,196,.12);}
+[data-theme="afternoon"]{--bg:#edf5f0;--surface:#fff;--surface2:#f2f8f4;--border:#c0ddc9;--header:#d4ede0;--accent:#1d9e6a;--green:#1d9e6a;--red:#e0455a;--gold:#d4860a;--blue:#3b7fc4;--purple:#7c5cbf;--text:#1a2d22;--muted:#7aaa8e;--shadow:0 2px 10px rgba(29,158,106,.12);}
+[data-theme="night"]    {--bg:#1e2d3d;--surface:#253545;--surface2:#2c3f52;--border:#344d63;--header:#1a2738;--accent:#4cb8e8;--green:#3dd68c;--red:#f06080;--gold:#f0b840;--blue:#4cb8e8;--purple:#a07ee8;--text:#d8eaf5;--muted:#7a9eb8;--shadow:0 2px 16px rgba(0,0,0,.28);}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;overflow-x:hidden;transition:background .5s,color .5s}
+
+/* HEADER */
+.header{padding:12px 16px 10px;display:flex;align-items:center;justify-content:space-between;background:var(--header);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;transition:background .5s;gap:10px}
+.header-left{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+
+/* FOTO DE PERFIL */
+.foto-wrap{position:relative;flex-shrink:0}
+.foto-perfil{width:82px;height:82px;border-radius:50%;object-fit:cover;border:3px solid var(--accent);cursor:pointer;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden;position:relative}
+.foto-perfil img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.foto-input{display:none}
+
+/* NOMBRE Y FECHA */
+.header-info{min-width:0}
+.user-name{font-family:'Pacifico',cursive;font-size:24px;font-weight:400;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:1.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.date-line{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:var(--text);text-transform:capitalize;margin-top:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.tcycle{width:42px;height:42px;border-radius:50%;background:var(--surface);border:2px solid var(--border);font-size:21px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:all .2s;flex-shrink:0}
+.tcycle:active{transform:scale(.9)}
+.header-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+
+/* ANIMACIONES TABS */
+@keyframes mic-wave{
+  0%{transform:scale(1)}
+  25%{transform:scale(1.15)}
+  50%{transform:scale(.95)}
+  75%{transform:scale(1.08)}
+  100%{transform:scale(1)}
+}
+@keyframes money-bounce{
+  0%,100%{transform:translateY(0)}
+  25%{transform:translateY(-7px)}
+  50%{transform:translateY(0)}
+  75%{transform:translateY(-4px)}
+}
+@keyframes heart-beat{
+  0%{transform:scale(1)}
+  8%{transform:scale(1.35)}
+  16%{transform:scale(1)}
+  24%{transform:scale(1.25)}
+  32%{transform:scale(1)}
+  58%{transform:scale(1.35)}
+  66%{transform:scale(1)}
+  74%{transform:scale(1.25)}
+  82%{transform:scale(1)}
+  100%{transform:scale(1)}
+}
+.anim-mic{animation:mic-wave 1.4s ease}
+.anim-money{animation:money-bounce 1.3s ease}
+.anim-heart{animation:heart-beat 5s ease}
+.edit-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.edit-modal-bg.on{display:flex}
+.edit-modal{background:var(--surface);border-radius:18px;padding:22px 20px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.edit-modal-ttl{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+.edit-modal-conc{font-size:15px;font-weight:800;color:var(--text);margin-bottom:14px}
+.edit-modal-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+
+/* TABS PRINCIPALES */
+.main-tabs{display:flex;padding:8px 12px;gap:6px;background:var(--bg);border-bottom:2px solid var(--border);position:sticky;top:96px;z-index:190}
+.mtab{flex:1;padding:10px 2px;border:none;background:transparent;color:var(--muted);border-radius:10px;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .25s;text-align:center;opacity:.45;font-size:13px}
+.mtab.on{color:var(--text);opacity:1;font-weight:900;font-size:15px;text-shadow:0 0 16px var(--accent),0 0 6px var(--accent)}
+
+/* SUBMENÚ */
+.submenu{display:none;padding:6px 12px;gap:6px;background:var(--surface2);border-bottom:1px solid var(--border);position:sticky;top:140px;z-index:180;flex-wrap:wrap}
+.submenu.on{display:flex}
+.stab{padding:6px 14px;border:1px solid var(--border);background:var(--surface);color:var(--muted);border-radius:20px;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap}
+.stab.on{border-color:var(--accent);color:var(--accent);background:var(--surface2)}
+
+/* SECCIONES */
+.sec{display:none;padding:15px}.sec.on{display:block}
+
+/* ── VOZ ────────────────────────────────────────────────────────────────────── */
+.voz-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 130px);padding:20px 20px 30px;gap:20px}
+.mic-outer{position:relative;display:flex;align-items:center;justify-content:center}
+.mring{position:absolute;border-radius:50%;border:2.5px solid var(--accent);opacity:0;transition:opacity .3s}
+.r1{width:200px;height:200px}.r2{width:238px;height:238px}.r3{width:276px;height:276px}
+.bigmic{width:170px;height:170px;border-radius:50%;background:var(--surface);border:4px solid var(--border);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:all .25s;position:relative;z-index:1;box-shadow:0 4px 24px rgba(0,0,0,.12)}
+.bigmic:active{transform:scale(.93)}
+.bigmic.act{border-color:var(--accent);background:var(--surface2)}
+.bigmic.act~.mring{opacity:.25;animation:pu 1.7s ease-in-out infinite}
+.bigmic.act~.r2{animation-delay:.35s}.bigmic.act~.r3{animation-delay:.7s}
+@keyframes pu{0%,100%{transform:scale(1);opacity:.25}50%{transform:scale(1.05);opacity:.07}}
+.mic-ico{font-size:70px;line-height:1}
+.mic-sub{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase}
+.smsg{font-size:13px;font-weight:700;color:var(--muted);text-align:center;min-height:20px}
+.smsg.err{color:var(--red)}.smsg.ok{color:var(--green)}.smsg.ld{color:var(--blue)}
+.tbox{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:13px;padding:14px;min-height:52px;font-size:14px;font-weight:600;color:var(--text);line-height:1.6;transition:border-color .3s}
+.tbox.act{border-color:var(--accent)}
+.tbox .ph{color:var(--muted);font-size:12px;font-weight:400}
+
+/* ACTIVACIÓN DE MÓDULO */
+.activate-box{width:100%;background:var(--surface);border:1.5px solid var(--gold);border-radius:13px;padding:14px;display:none;flex-direction:column;gap:10px}
+.activate-box.on{display:flex}
+.act-msg{font-size:13px;font-weight:700;color:var(--text);text-align:center}
+.act-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* PREVIEW */
+.preview{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:13px;padding:14px;display:none;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.preview.on{display:flex}
+.prow{display:flex;justify-content:space-between;align-items:center}
+.pkey{font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:700}
+.pval{font-size:13px;font-weight:700;color:var(--text)}
+.pval.ingreso{color:var(--green)}.pval.egreso{color:var(--red)}.pval.presion{color:var(--gold)}.pval.peso{color:var(--blue)}.pval.actividad{color:var(--purple)}
+.pacts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px}
+.btn{padding:11px;border-radius:10px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .18s;border:1.5px solid transparent}
+.btn:active{transform:scale(.96)}
+.btnok{background:rgba(29,158,106,.1);border-color:var(--green);color:var(--green)}
+.btnno{background:rgba(224,69,90,.08);border-color:rgba(224,69,90,.3);color:var(--red)}
+.btngold{background:rgba(212,134,10,.1);border-color:var(--gold);color:var(--gold)}
+
+/* MANUAL */
+.man-link{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;font-weight:600}
+.mform{display:none;flex-direction:column;gap:9px;width:100%}.mform.on{display:flex}
+.finput{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;outline:none;width:100%;transition:border-color .2s}
+.finput:focus{border-color:var(--accent)}
+.finput::placeholder{color:var(--muted);font-weight:400}
+.trow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bprow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+/* ── ECONOMÍA ────────────────────────────────────────────────────────────────── */
+.bal-card{background:var(--accent);border-radius:18px;padding:20px;margin-bottom:13px;color:#fff;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.bal-card::after{content:'';position:absolute;top:-25px;right:-25px;width:90px;height:90px;background:rgba(255,255,255,.13);border-radius:50%}
+.bal-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;opacity:.8;margin-bottom:5px}
+.bal-amt{font-size:36px;font-weight:900;letter-spacing:-1px;margin-bottom:3px}
+.bal-amt.neg{color:#ffd0d8}
+.bal-meta{font-size:12px;opacity:.75}
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:13px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:13px;box-shadow:var(--shadow)}
+.stat.inc{border-top:3px solid var(--green)}.stat.exp{border-top:3px solid var(--red)}.stat.bps{border-top:3px solid var(--gold)}
+.slbl{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;font-weight:700}
+.sval{font-family:'DM Mono',monospace;font-size:19px;color:var(--text)}
+.stat.inc .sval{color:var(--green)}.stat.exp .sval{color:var(--red)}
+.scnt{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* PRESUPUESTO */
+.pres-card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:14px;margin-bottom:13px;box-shadow:var(--shadow)}
+.pres-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.pres-title{font-size:12px;font-weight:700;color:var(--text)}
+.pres-edit{font-size:11px;color:var(--accent);font-weight:700;cursor:pointer;text-decoration:underline}
+.pres-bar-wrap{background:var(--border);border-radius:20px;height:10px;overflow:hidden;margin-bottom:6px}
+.pres-bar{height:100%;border-radius:20px;transition:width .5s ease;background:var(--green)}
+.pres-bar.warn{background:var(--gold)}.pres-bar.over{background:var(--red)}
+.pres-nums{display:flex;justify-content:space-between;font-size:11px;font-weight:700}
+.pres-form{display:none;margin-top:10px;gap:8px;flex-direction:column}
+.pres-form.on{display:flex}
+
+/* ── SALUD ────────────────────────────────────────────────────────────────────── */
+.bp-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:13px}
+.bpmini{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 8px;text-align:center;box-shadow:var(--shadow)}
+.bplbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:3px}
+.bpval{font-family:'DM Mono',monospace;font-size:16px;color:var(--text)}
+.bpval.hi{color:var(--red)}.bpval.ok{color:var(--green)}.bpval.lo{color:var(--gold)}
+
+/* ENTRIES */
+.sec-ttl{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:9px;font-weight:700}
+.elist{display:flex;flex-direction:column;gap:7px}
+.ei{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:9px;box-shadow:var(--shadow);animation:si .25s ease;position:relative;overflow:hidden}
+@keyframes si{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.edot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.edot.ingreso{background:var(--green)}.edot.egreso{background:var(--red)}.edot.presion{background:var(--gold)}.edot.peso{background:var(--blue)}.edot.actividad{background:var(--purple)}
+.einf{flex:1;min-width:0}
+.econc{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.etim{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:1px}
+.eamt{font-family:'DM Mono',monospace;font-size:13px;flex-shrink:0}
+.eamt.ingreso{color:var(--green)}.eamt.egreso{color:var(--red)}.eamt.presion{color:var(--gold)}.eamt.peso{color:var(--blue)}.eamt.actividad{color:var(--purple)}
+.delbtn{position:absolute;right:9px;top:50%;transform:translateY(-50%);background:rgba(224,69,90,.1);border:1px solid rgba(224,69,90,.3);color:var(--red);border-radius:7px;padding:5px 8px;font-size:11px;cursor:pointer;opacity:0;transition:opacity .2s;font-family:'Nunito',sans-serif}
+.ei.sd .delbtn{opacity:1}
+.ei.sd{background:rgba(224,69,90,.06);border-color:rgba(224,69,90,.35);}
+.ei.sd .eamt{opacity:0;}
+.empty{text-align:center;padding:32px 14px;color:var(--muted);font-size:13px;line-height:2}
+
+/* BANNER DE ESTADO */
+.status-banner{border-radius:11px;padding:10px 14px;font-size:12px;font-weight:700;margin-bottom:13px;display:none;border:1.5px solid transparent}
+.status-banner.on{display:block}
+.status-banner.alta{background:rgba(224,122,48,.1);border-color:#e07a30;color:#e07a30}
+.status-banner.baja{background:rgba(122,154,174,.1);border-color:var(--muted);color:var(--muted)}
+.status-banner.normal{background:rgba(29,168,110,.1);border-color:var(--green);color:var(--green)}
+.status-banner.inactivo{background:rgba(122,154,174,.1);border-color:var(--muted);color:var(--muted)}
+.status-banner.activo{background:rgba(29,168,110,.1);border-color:var(--green);color:var(--green)}
+
+/* GRÁFICAS */
+.chart-wrap{display:none;margin-bottom:16px}
+.chart-wrap.on{display:block}
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:12px;box-shadow:var(--shadow)}
+.chart-legend{display:flex;gap:16px;justify-content:center;margin-top:8px;font-size:11px;font-weight:700}
+
+/* MEDICAMENTOS */
+.med-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow)}
+.med-nombre{font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px}
+.med-dosis{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:10px}
+.med-horarios{display:flex;flex-direction:column;gap:7px}
+.med-horario-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:10px;padding:8px 12px}
+.med-hora{font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:var(--text)}
+.med-alarm-btn{padding:6px 12px;border-radius:8px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.med-alarm-btn:active{transform:scale(.95)}
+.med-tratamiento{font-size:10px;color:var(--gold);font-weight:700;margin-top:6px;letter-spacing:.5px}
+.med-actions{display:flex;gap:8px;margin-top:10px}
+.med-del{flex:1;padding:7px;border-radius:8px;border:1px solid rgba(224,69,90,.3);background:rgba(224,69,90,.08);color:var(--red);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
+
+/* FORM MEDICAMENTO */
+.med-form-wrap{background:var(--surface);border:1.5px solid var(--accent);border-radius:14px;padding:14px;margin-bottom:13px;display:none;flex-direction:column;gap:10px}
+.med-form-wrap.on{display:flex}
+.med-form-ttl{font-size:12px;font-weight:800;color:var(--accent);letter-spacing:1px;text-transform:uppercase}
+.horarios-list{display:flex;flex-direction:column;gap:7px}
+.horario-item{display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:10px;padding:8px 10px}
+.horario-item input[type=time]{background:transparent;border:none;font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:var(--text);outline:none;flex:1}
+.horario-del{background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:0 4px}
+.add-horario{padding:8px;border-radius:10px;border:1.5px dashed var(--border);background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;width:100%}
+.tratamiento-row{display:flex;align-items:center;gap:10px}
+.tratamiento-row label{font-size:12px;font-weight:700;color:var(--muted)}
+.tratamiento-row input[type=checkbox]{width:18px;height:18px;cursor:pointer}
+
+.btn-agregar-med{width:100%;padding:11px;border-radius:10px;border:1.5px dashed var(--accent);background:transparent;color:var(--accent);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:13px}
+
+/* FILTROS */
+.frow{display:flex;gap:7px;margin-bottom:13px;flex-wrap:wrap}
+.fbtn{padding:6px 13px;border-radius:17px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.fbtn.on{border-color:var(--accent);color:var(--accent);background:var(--surface2)}
+
+/* PANTALLA DE PERFIL */
+.perfil-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;display:none;align-items:flex-end;justify-content:center}
+.perfil-overlay.on{display:flex}
+.perfil-sheet{background:var(--bg);border-radius:24px 24px 0 0;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;padding:20px 18px 40px}
+.perfil-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
+.perfil-header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.perfil-foto-big{width:100px;height:100px;border-radius:50%;border:3px solid var(--accent);background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:48px;overflow:hidden;position:relative;cursor:pointer;flex-shrink:0}
+.perfil-foto-big img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.perfil-nombre-big{font-family:'Pacifico',cursive;font-size:22px;font-weight:400;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.perfil-imc{font-size:12px;font-weight:700;margin-top:4px}
+.perfil-imc.ok{color:var(--green)}.perfil-imc.warn{color:var(--gold)}.perfil-imc.high{color:var(--red)}
+
+.perfil-section{margin-bottom:16px}
+.perfil-section-ttl{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:8px}
+.perfil-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.perfil-field{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.perfil-field-lbl{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:4px}
+.perfil-field-val{font-size:14px;font-weight:700;color:var(--text)}
+.perfil-field.full{grid-column:1/-1}
+.perfil-field.danger{border-color:var(--red);background:rgba(224,69,90,.05)}
+.perfil-field.danger .perfil-field-lbl{color:var(--red)}
+
+.perfil-edit-btn{width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px}
+.perfil-emergency-btn{width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--red);background:rgba(224,69,90,.08);color:var(--red);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px}
+.perfil-close{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+
+/* FORM EDITAR PERFIL */
+.perfil-form{display:none;flex-direction:column;gap:9px;margin-top:12px}
+.perfil-form.on{display:flex}
+.perfil-form-ttl{font-size:11px;letter-spacing:1.5px;color:var(--accent);text-transform:uppercase;font-weight:700}
+.blood-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.blood-btn{padding:8px 4px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s}
+.blood-btn.on{border-color:var(--red);color:var(--red);background:rgba(224,69,90,.08)}
+
+/* CUMPLEAÑOS BANNER */
+.birthday-banner{background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff;border-radius:14px;padding:14px 16px;margin-bottom:13px;display:none;align-items:center;gap:10px}
+.birthday-banner.on{display:flex}
+.birthday-banner .bb-ico{font-size:28px}
+.birthday-banner .bb-txt{font-size:13px;font-weight:700;line-height:1.5}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:9px 18px;font-size:13px;font-weight:700;color:var(--text);z-index:999;transition:transform .3s;white-space:nowrap;box-shadow:var(--shadow)}
+.toast.on{transform:translateX(-50%) translateY(0)}.toast.ts{border-color:var(--green);color:var(--green)}.toast.te{border-color:var(--red);color:var(--red)}
+.spin{display:inline-block;width:10px;height:10px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:4px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.bot{height:30px}
+</style>
+</head>
+<body data-theme="morning">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="foto-wrap">
+      <div class="foto-perfil" id="fotoPerfil" onclick="abrirPerfil()">
+        <span id="fotoEmoji">👤</span>
+        <img id="fotoImg" src="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%">
+      </div>
+      <input type="file" class="foto-input" id="fotoInput" accept="image/*" onchange="cargarFoto(event)">
+    </div>
+    <div class="header-info">
+      <div class="user-name" id="headerNombre">Juan Antonio</div>
+      <div class="date-line" id="dateEl">—</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button onclick="location.reload()" style="width:42px;height:42px;border-radius:50%;background:var(--surface);border:2px solid var(--border);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)" title="Refrescar">🔄</button>
+    <button class="tcycle" id="tcycle" onclick="cycleTheme()">☀️</button>
+  </div>
+</div>
+
+<!-- PERFIL OVERLAY -->
+<div class="perfil-overlay" id="perfilOverlay" onclick="cerrarPerfil()">
+<div class="perfil-sheet" onclick="event.stopPropagation()">
+  <div class="perfil-handle"></div>
+
+  <!-- VISTA PERFIL -->
+  <div id="perfilVista">
+    <div class="perfil-header">
+      <div style="text-align:center">
+        <div class="perfil-foto-big" onclick="document.getElementById('fotoInputPerfil').click()">
+          <span id="perfilFotoEmoji">👤</span>
+          <img id="perfilFotoImg" src="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%">
+        </div>
+        <input type="file" style="display:none" id="fotoInputPerfil" accept="image/*" onchange="cargarFoto(event)">
+        <div style="font-size:10px;color:var(--muted);font-weight:700;margin-top:5px;letter-spacing:.5px">📷 Toca para cambiar</div>
+      </div>
+      <div>
+        <div class="perfil-nombre-big" id="perfilNombreVista">Juan Antonio</div>
+      </div>
+    </div>
+
+    <!-- BANNER CUMPLEAÑOS -->
+    <div class="birthday-banner" id="birthdayBanner">
+      <div class="bb-ico">🎂</div>
+      <div class="bb-txt" id="birthdayTxt">—</div>
+    </div>
+
+    <!-- DATOS PERSONALES -->
+    <div class="perfil-section">
+      <div class="perfil-section-ttl">Datos personales</div>
+      <div class="perfil-grid">
+        <div class="perfil-field"><div class="perfil-field-lbl">Edad</div><div class="perfil-field-val" id="pEdad">—</div></div>
+        <div class="perfil-field"><div class="perfil-field-lbl">Nacimiento</div><div class="perfil-field-val" id="pNac">—</div></div>
+        <div class="perfil-field"><div class="perfil-field-lbl">Estatura</div><div class="perfil-field-val" id="pEstatura">—</div></div>
+        <div class="perfil-field"><div class="perfil-field-lbl">Peso actual</div><div class="perfil-field-val" id="pPeso">—</div></div>
+        <div class="perfil-field full"><div class="perfil-field-lbl">Índice de masa corporal (IMC)</div><div class="perfil-field-val perfil-imc" id="perfilIMC">—</div></div>
+      </div>
+    </div>
+
+    <!-- DATOS MÉDICOS -->
+    <div class="perfil-section">
+      <div class="perfil-section-ttl">Ficha médica</div>
+      <div class="perfil-grid">
+        <div class="perfil-field danger"><div class="perfil-field-lbl">Tipo de sangre</div><div class="perfil-field-val" id="pSangre">—</div></div>
+        <div class="perfil-field"><div class="perfil-field-lbl">Condición</div><div class="perfil-field-val" id="pCondicion">—</div></div>
+        <div class="perfil-field full"><div class="perfil-field-lbl">Alergias</div><div class="perfil-field-val" id="pAlergias">—</div></div>
+        <div class="perfil-field"><div class="perfil-field-lbl">Médico / Contacto</div><div class="perfil-field-val" id="pMedico">—</div></div>
+        <div class="perfil-field"><div class="perfil-field-lbl">Tel. emergencia</div><div class="perfil-field-val" id="pTelEmergencia">—</div></div>
+      </div>
+    </div>
+
+    <button class="perfil-edit-btn" onclick="mostrarFormPerfil()">✏️ Editar perfil</button>
+    <button class="perfil-emergency-btn" onclick="irEmergenciaAndroid()">🆘 Configurar info de emergencia en Android</button>
+    <button class="perfil-close" onclick="cerrarPerfil()">Cerrar</button>
+  </div>
+
+  <!-- FORM EDITAR PERFIL -->
+  <div class="perfil-form" id="perfilForm">
+    <div class="perfil-form-ttl">Editar perfil</div>
+
+    <input class="finput" id="pfNombre" placeholder="Nombre completo">
+    <input class="finput" id="pfNacimiento" type="date" placeholder="Fecha de nacimiento">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <input class="finput" id="pfEstatura" type="number" placeholder="Estatura cm">
+      <input class="finput" id="pfPeso" type="number" placeholder="Peso kg">
+    </div>
+
+    <div class="perfil-form-ttl" style="margin-top:6px">Tipo de sangre</div>
+    <div class="blood-grid" id="bloodGrid">
+      <button class="blood-btn" onclick="selSangre('A+',this)">A+</button>
+      <button class="blood-btn" onclick="selSangre('A-',this)">A-</button>
+      <button class="blood-btn" onclick="selSangre('B+',this)">B+</button>
+      <button class="blood-btn" onclick="selSangre('B-',this)">B-</button>
+      <button class="blood-btn" onclick="selSangre('AB+',this)">AB+</button>
+      <button class="blood-btn" onclick="selSangre('AB-',this)">AB-</button>
+      <button class="blood-btn" onclick="selSangre('O+',this)">O+</button>
+      <button class="blood-btn" onclick="selSangre('O-',this)">O-</button>
+    </div>
+
+    <input class="finput" id="pfAlergias" placeholder="Alergias (ej. penicilina, mariscos)">
+    <input class="finput" id="pfCondicion" placeholder="Condición crónica (ej. diabetes, hipertensión)">
+    <input class="finput" id="pfMedico" placeholder="Nombre del médico o contacto emergencia">
+    <input class="finput" id="pfTelEmergencia" type="tel" placeholder="Teléfono de emergencia">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+      <button class="btn btnok" onclick="guardarPerfil()">✓ Guardar</button>
+      <button class="btn btnno" onclick="cancelarFormPerfil()">✗ Cancelar</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- MODAL BORRAR HISTORIAL -->
+<div class="edit-modal-bg" id="borrarModal" onclick="cerrarBorrarModal()">
+  <div class="edit-modal" onclick="event.stopPropagation()">
+    <div class="edit-modal-ttl">🗑 Borrar historial</div>
+    <div class="edit-modal-conc" style="font-size:13px;color:var(--muted);font-weight:600">¿Qué deseas eliminar?</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+      <button class="btn" onclick="ejecutarBorrar('semana')" style="border-color:var(--gold);color:var(--gold);background:rgba(212,134,10,.08);text-align:left;padding:12px 14px">📅 Esta semana</button>
+      <button class="btn" onclick="ejecutarBorrar('mes')" style="border-color:var(--gold);color:var(--gold);background:rgba(212,134,10,.08);text-align:left;padding:12px 14px">🗓 Este mes</button>
+      <button class="btn" onclick="ejecutarBorrar('todo_fin')" style="border-color:var(--red);color:var(--red);background:rgba(224,69,90,.08);text-align:left;padding:12px 14px">💰 Todo historial financiero</button>
+      <button class="btn" onclick="ejecutarBorrar('todo_sal')" style="border-color:var(--red);color:var(--red);background:rgba(224,69,90,.08);text-align:left;padding:12px 14px">❤️ Todo historial de salud</button>
+      <button class="btn" onclick="ejecutarBorrar('todo_act')" style="border-color:var(--red);color:var(--red);background:rgba(224,69,90,.08);text-align:left;padding:12px 14px">🏃 Todo historial de actividad</button>
+      <button class="btn btnno" onclick="cerrarBorrarModal()" style="margin-top:4px">Cancelar</button>
+    </div>
+  </div>
+</div>
+<div class="edit-modal-bg" id="editModalBg" onclick="cerrarEdicion()">
+  <div class="edit-modal" onclick="event.stopPropagation()">
+    <div class="edit-modal-ttl">Corregir monto</div>
+    <div class="edit-modal-conc" id="editConcepto">—</div>
+    <input class="finput" id="editMonto" type="number" placeholder="Nuevo monto $">
+    <div class="edit-modal-btns">
+      <button class="btn btnok" onclick="guardarEdicion()">✓ Guardar</button>
+      <button class="btn btnno" onclick="cerrarEdicion()">✗ Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TABS PRINCIPALES -->
+<div class="main-tabs">
+  <button class="mtab on" onclick="goMain('voz',this)"><div id="ico-voz" style="font-size:24px">🎙️</div><div>Voz</div></button>
+  <button class="mtab"    onclick="goMain('eco',this)"><div id="ico-eco" style="font-size:24px">💰</div><div>Economía</div></button>
+  <button class="mtab"    onclick="goMain('sal',this)"><div id="ico-sal" style="font-size:24px">❤️</div><div>Salud</div></button>
+</div>
+
+<!-- SUBMENÚ ECONOMÍA -->
+<div class="submenu" id="sub-eco">
+  <button class="stab on" onclick="goSub('eco','ingresos',this)">Ingresos</button>
+  <button class="stab"    onclick="goSub('eco','egresos',this)">Egresos</button>
+  <button class="stab"    onclick="goSub('eco','presupuesto',this)">Presupuesto</button>
+  <button class="stab"    onclick="goSub('eco','dashboard',this)">Dashboard</button>
+</div>
+
+<!-- SUBMENÚ SALUD -->
+<div class="submenu" id="sub-sal">
+  <button class="stab on" onclick="goSub('sal','presion',this)">Presión</button>
+  <button class="stab"    onclick="goSub('sal','peso',this)">Peso</button>
+  <button class="stab"    onclick="goSub('sal','medicamentos',this)">💊 Medicamentos</button>
+  <button class="stab" id="stab-actividad" style="display:none" onclick="goSub('sal','actividad',this)">🏃 Actividad</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     VOZ
+═══════════════════════════════════════════════════════════ -->
+<div class="sec on" id="tab-voz">
+<div class="voz-screen">
+
+  <div class="mic-outer">
+    <button class="bigmic" id="micBtn" onclick="togMic()">
+      <span class="mic-ico" id="micIco">🎙️</span>
+      <span class="mic-sub" id="micSub">Voz</span>
+    </button>
+    <div class="mring r1"></div><div class="mring r2"></div><div class="mring r3"></div>
+  </div>
+
+  <div class="smsg" id="smsg">Toca el micrófono y habla</div>
+  <div class="tbox" id="tbox"><span class="ph">Lo que digas aparecerá aquí…</span></div>
+
+  <!-- ACTIVACIÓN DE MÓDULO NUEVO -->
+  <div class="activate-box" id="activateBox">
+    <div class="act-msg" id="activateMsg">—</div>
+    <div class="act-btns">
+      <button class="btn btngold" onclick="activarModulo()">✓ Activar y guardar</button>
+      <button class="btn btnno"   onclick="rechazarModulo()">✗ Solo guardar</button>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview" id="prev">
+    <div class="prow"><span class="pkey">Tipo</span><span class="pval" id="pTipo">—</span></div>
+    <div class="prow"><span class="pkey">Concepto</span><span class="pval" id="pConc">—</span></div>
+    <div class="prow"><span class="pkey">Valor</span><span class="pval" id="pVal">—</span></div>
+    <div id="prevCatRow" class="prow" style="display:none">
+      <span class="pkey">Categoría</span>
+      <select id="pCat" class="finput" style="padding:5px 8px;font-size:12px;width:auto">
+        <option value="general">General</option>
+        <option value="gasolina">⛽ Gasolina</option>
+        <option value="comida">🍽 Comida</option>
+        <option value="refacciones">🔧 Refacciones</option>
+        <option value="deudas">💳 Deudas</option>
+        <option value="servicios">💡 Servicios</option>
+        <option value="salud_gasto">❤️ Salud</option>
+        <option value="hogar">🏠 Hogar</option>
+        <option value="transporte">🚗 Transporte</option>
+        <option value="otros">📦 Otros</option>
+      </select>
+    </div>
+    <div class="pacts">
+      <button class="btn btnok" onclick="confirmE()">✓ Guardar</button>
+      <button class="btn btnno" onclick="cancelE()">✗ Cancelar</button>
+    </div>
+  </div>
+
+  <span class="man-link" onclick="togManual()">✏️ Captura manual</span>
+
+  <div class="mform" id="mform">
+    <div id="mfSelector" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+      <button class="fbtn on" onclick="setManSub('fin',this)">💰 Finanzas</button>
+      <button class="fbtn"    onclick="setManSub('bp',this)">❤️ Presión</button>
+      <button class="fbtn"    onclick="setManSub('peso',this)">⚖️ Peso</button>
+      <button class="fbtn" id="manActBtn" style="display:none" onclick="setManSub('act',this)">🏃 Actividad</button>
+    </div>
+    <div id="mfFin">
+      <div class="trow" style="margin-bottom:9px">
+        <button class="btn" id="bEgr" onclick="setMT('egreso')"  style="border-color:var(--red);color:var(--red)">↓ Egreso</button>
+        <button class="btn" id="bIng" onclick="setMT('ingreso')" style="border-color:var(--border);color:var(--muted)">↑ Ingreso</button>
+      </div>
+      <input class="finput" id="mConc"  placeholder="Concepto" style="margin-bottom:9px">
+      <input class="finput" id="mMonto" type="number" placeholder="Monto $" style="margin-bottom:9px">
+      <select class="finput" id="mCat">
+        <option value="general">General</option>
+        <option value="gasolina">⛽ Gasolina</option>
+        <option value="comida">🍽 Comida</option>
+        <option value="refacciones">🔧 Refacciones</option>
+        <option value="deudas">💳 Deudas</option>
+        <option value="servicios">💡 Servicios</option>
+        <option value="salud_gasto">❤️ Salud</option>
+        <option value="hogar">🏠 Hogar</option>
+        <option value="transporte">🚗 Transporte</option>
+        <option value="otros">📦 Otros</option>
+      </select>
+    </div>
+    <div id="mfBP" style="display:none">
+      <div class="bprow">
+        <input class="finput" id="bpS" type="number" placeholder="Sistólica">
+        <input class="finput" id="bpD" type="number" placeholder="Diastólica">
+        <input class="finput" id="bpP" type="number" placeholder="Pulso">
+      </div>
+    </div>
+    <div id="mfPeso" style="display:none">
+      <input class="finput" id="pesoV" type="number" placeholder="Peso en kg">
+    </div>
+    <div id="mfAct" style="display:none">
+      <input class="finput" id="actDesc" placeholder="Ej: nadé 3km mariposa" style="margin-bottom:9px">
+      <input class="finput" id="actDist" type="number" placeholder="Distancia / duración (opcional)">
+    </div>
+    <button class="btn btnok" onclick="saveMan()" style="width:100%;margin-top:4px">Guardar</button>
+  </div>
+
+  <div class="bot"></div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     ECONOMÍA — INGRESOS
+═══════════════════════════════════════════════════════════ -->
+<div class="sec" id="tab-eco-ingresos">
+
+  <!-- BARRA TOGGLEABLE -->
+  <div class="pres-card" style="margin-bottom:13px;cursor:pointer" onclick="toggleIngPeriodo()">
+    <div class="pres-header">
+      <span class="pres-title" id="ingPeriodoLabel">📅 Esta semana</span>
+      <span style="font-size:10px;color:var(--muted);font-weight:700">Toca para cambiar →</span>
+    </div>
+    <div class="pres-bar-wrap">
+      <div class="pres-bar" id="ingBarPeriodo" style="width:0%;background:var(--green)"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px">
+      <span style="font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:var(--green)" id="ingPeriodoAmt">$0</span>
+      <span style="font-size:11px;font-weight:700;color:var(--muted);text-align:right;line-height:1.5" id="ingPeriodoInfo">—</span>
+    </div>
+    <div style="font-size:10px;color:var(--muted);font-weight:600;margin-top:4px" id="ingPeriodoRango">—</div>
+  </div>
+
+  <div class="sec-ttl" style="display:flex;justify-content:space-between;align-items:center">Historial<button onclick="mostrarOpcionesBorrar()" style="font-size:11px;font-weight:700;color:var(--red);background:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;text-decoration:underline">🗑 Borrar</button></div>
+  <div class="elist" id="listaIngresos"><div class="empty">Sin ingresos registrados.</div></div>
+  <div class="bot"></div>
+</div>
+
+<!-- ECONOMÍA — EGRESOS -->
+<div class="sec" id="tab-eco-egresos">
+  <div class="frow" id="catFiltros"></div>
+  <div class="sec-ttl" style="display:flex;justify-content:space-between;align-items:center">Historial<button onclick="mostrarOpcionesBorrar()" style="font-size:11px;font-weight:700;color:var(--red);background:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;text-decoration:underline">🗑 Borrar</button></div>
+  <div class="elist" id="listaEgresos"><div class="empty">Sin egresos registrados.</div></div>
+  <div class="bot"></div>
+</div>
+
+<!-- ECONOMÍA — PRESUPUESTO -->
+<div class="sec" id="tab-eco-presupuesto">
+  <div class="pres-card">
+    <div class="pres-header">
+      <span class="pres-title">Presupuesto mensual</span>
+      <span class="pres-edit" onclick="togPresForm()">✏️ Editar</span>
+    </div>
+    <div class="pres-bar-wrap"><div class="pres-bar" id="presBar" style="width:0%"></div></div>
+    <div class="pres-nums">
+      <span id="presGastado" style="color:var(--red)">$0 gastado</span>
+      <span id="presLimite" style="color:var(--muted)">$0 límite</span>
+    </div>
+    <div id="presMensaje" style="margin-top:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:700;text-align:center;display:none"></div>
+    <div class="pres-form" id="presForm">
+      <input class="finput" id="presInput" type="number" placeholder="Límite mensual $">
+      <button class="btn btnok" onclick="guardarPresupuesto()">Guardar</button>
+    </div>
+  </div>
+  <div class="sec-ttl">Desglose por categoría</div>
+  <div class="elist" id="listaCats"><div class="empty">Sin egresos este mes.</div></div>
+  <div class="bot"></div>
+</div>
+
+<!-- ECONOMÍA — DASHBOARD -->
+<div class="sec" id="tab-eco-dashboard">
+
+  <!-- TARJETA PRINCIPAL -->
+  <div class="bal-card">
+    <div class="bal-label" id="balLabel">Te quedan este mes</div>
+    <div class="bal-amt" id="balAmt">$0</div>
+    <div class="bal-meta" id="balMeta">sin registros</div>
+  </div>
+
+  <!-- DONA + STATS -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:14px;margin-bottom:13px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px">
+    <canvas id="donaChart" width="100" height="100" style="flex-shrink:0"></canvas>
+    <div style="flex:1">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--green);flex-shrink:0"></div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase">Entró</div>
+          <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:700;color:var(--green)" id="tIng">$0</div>
+          <div style="font-size:10px;color:var(--muted)" id="cIng">0 registros</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--red);flex-shrink:0"></div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase">Salió</div>
+          <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:700;color:var(--red)" id="tEgr">$0</div>
+          <div style="font-size:10px;color:var(--muted)" id="cEgr">0 registros</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOQUE SEMANA -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:13px;margin-bottom:13px;box-shadow:var(--shadow)">
+    <div class="sec-ttl" style="margin-bottom:8px">Esta semana</div>
+    <div class="stats-row" style="margin-bottom:0">
+      <div class="stat inc" style="border-radius:10px;padding:10px"><div class="slbl">Entró</div><div class="sval" style="font-size:16px" id="dashSemIng">$0</div></div>
+      <div class="stat exp" style="border-radius:10px;padding:10px"><div class="slbl">Salió</div><div class="sval" style="font-size:16px" id="dashSemEgr">$0</div></div>
+    </div>
+    <div style="margin-top:8px;font-size:11px;font-weight:700;text-align:center" id="dashSemTend">—</div>
+  </div>
+
+  <!-- GRÁFICA BARRAS SEMANALES -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:13px;margin-bottom:13px;box-shadow:var(--shadow)">
+    <div class="sec-ttl" style="margin-bottom:10px">Por semana este mes</div>
+    <canvas id="dashBarChart" height="120" style="width:100%;display:block"></canvas>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:8px;font-size:10px;font-weight:700">
+      <span style="color:var(--green)">■ Entró</span>
+      <span style="color:var(--red)">■ Salió</span>
+    </div>
+  </div>
+
+  <!-- ÚLTIMOS MOVIMIENTOS -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+    <div class="sec-ttl" style="margin-bottom:0">Últimos movimientos</div>
+    <button onclick="mostrarOpcionesBorrar()" style="font-size:11px;font-weight:700;color:var(--red);background:none;border:none;cursor:pointer;padding:4px 8px">🗑 Borrar historial</button>
+  </div>
+  <div class="elist" id="listaReciente"><div class="empty">Sin registros.</div></div>
+  <div class="bot"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SALUD — PRESIÓN
+═══════════════════════════════════════════════════════════ -->
+<div class="sec" id="tab-sal-presion">
+  <div class="bp-grid">
+    <div class="bpmini"><div class="bplbl">Sistólica</div><div class="bpval" id="avgS">—</div></div>
+    <div class="bpmini"><div class="bplbl">Diastólica</div><div class="bpval" id="avgD">—</div></div>
+    <div class="bpmini"><div class="bplbl">Pulso</div><div class="bpval" id="avgP">—</div></div>
+  </div>
+  <div class="status-banner" id="bpStatus"></div>
+  <div class="chart-wrap" id="bpChartWrap">
+    <div class="sec-ttl">Tendencia</div>
+    <div class="chart-box">
+      <canvas id="bpChart" height="160" style="width:100%;display:block"></canvas>
+      <div class="chart-legend">
+        <span style="color:var(--red)">— Sistólica</span>
+        <span style="color:var(--blue)">— Diastólica</span>
+      </div>
+    </div>
+  </div>
+  <div class="sec-ttl" style="display:flex;justify-content:space-between;align-items:center">Historial<button onclick="mostrarOpcionesBorrar()" style="font-size:11px;font-weight:700;color:var(--red);background:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;text-decoration:underline">🗑 Borrar</button></div>
+  <div class="elist" id="listaBP"><div class="empty">Sin mediciones.<br>Di <strong>"presión 120 sobre 80"</strong></div></div>
+  <div class="bot"></div>
+</div>
+
+<!-- SALUD — PESO -->
+<div class="sec" id="tab-sal-peso">
+  <div class="status-banner" id="pesoStatus"></div>
+  <div class="chart-wrap" id="pesoChartWrap">
+    <div class="sec-ttl">Tendencia</div>
+    <div class="chart-box">
+      <canvas id="pesoChart" height="140" style="width:100%;display:block"></canvas>
+      <div class="chart-legend"><span style="color:var(--blue)">— Peso (kg)</span></div>
+    </div>
+  </div>
+  <div class="sec-ttl" style="display:flex;justify-content:space-between;align-items:center">Historial<button onclick="mostrarOpcionesBorrar()" style="font-size:11px;font-weight:700;color:var(--red);background:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;text-decoration:underline">🗑 Borrar</button></div>
+  <div class="elist" id="listaPeso"><div class="empty">Sin registros.<br>Di <strong>"peso 78 kilos"</strong></div></div>
+  <div class="bot"></div>
+</div>
+
+<!-- SALUD — MEDICAMENTOS -->
+<div class="sec" id="tab-sal-medicamentos">
+
+  <!-- FORM AGREGAR -->
+  <div class="med-form-wrap" id="medFormWrap">
+    <div class="med-form-ttl">💊 Nuevo medicamento</div>
+    <input class="finput" id="medNombre" placeholder="Nombre del medicamento">
+    <input class="finput" id="medDosis" placeholder="Dosis (ej. 500mg, 1 tableta)">
+    <div class="sec-ttl" style="margin-bottom:6px">Horarios de toma</div>
+    <div class="horarios-list" id="horariosList">
+      <div class="horario-item">
+        <span class="toma-lbl" style="font-size:11px;font-weight:700;color:var(--muted);min-width:46px">Toma 1</span>
+        <input type="time" value="08:00">
+        <button class="horario-del" onclick="quitarHorario(this)">✕</button>
+      </div>
+    </div>
+    <button class="add-horario" id="btnAgregarToma" onclick="agregarHorario()">+ Toma 2</button>
+    <div class="tratamiento-row">
+      <input type="checkbox" id="esTratamiento">
+      <label for="esTratamiento">Es tratamiento temporal</label>
+    </div>
+    <div id="tratamientoFechas" style="display:none;gap:8px;flex-direction:column">
+      <input class="finput" id="fechaInicioMed" type="date" placeholder="Fecha inicio">
+      <input class="finput" id="fechaFinMed"    type="date" placeholder="Fecha fin">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn btnok" onclick="guardarMedicamento()">✓ Guardar</button>
+      <button class="btn btnno" onclick="cerrarFormMed()">✗ Cancelar</button>
+    </div>
+  </div>
+
+  <button class="btn-agregar-med" onclick="abrirFormMed()">+ Agregar medicamento</button>
+
+  <div class="sec-ttl">Mis medicamentos</div>
+  <div id="listaMedicamentos"><div class="empty">Sin medicamentos registrados.<br>Toca <strong>+ Agregar medicamento</strong></div></div>
+  <div class="bot"></div>
+</div>
+
+<!-- SALUD — ACTIVIDAD (oculto hasta activarse) -->
+<div class="sec" id="tab-sal-actividad">
+  <div class="status-banner" id="actStatus"></div>
+  <div class="sec-ttl" style="display:flex;justify-content:space-between;align-items:center">Actividad física<button onclick="mostrarOpcionesBorrar()" style="font-size:11px;font-weight:700;color:var(--red);background:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;text-decoration:underline">🗑 Borrar</button></div>
+  <div class="elist" id="listaActividad"><div class="empty">Sin actividades registradas.</div></div>
+  <div class="bot"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATOS ─────────────────────────────────────────────────────────────────────
+let finanzas   = JSON.parse(localStorage.getItem('vr_fin')   ||'[]');
+let salud      = JSON.parse(localStorage.getItem('vr_sal')   ||'[]');
+let actividad  = JSON.parse(localStorage.getItem('vr_act')   ||'[]');
+let medicamentos = JSON.parse(localStorage.getItem('vr_med') ||'[]');
+let modulos    = JSON.parse(localStorage.getItem('vr_mod')   ||'{"actividad":false}');
+let presupuesto= parseFloat(localStorage.getItem('vr_pres')  ||'0');
+
+let recog=null, listening=false, manOpen=false, manSub='fin', mtype='egreso';
+let rawText='', pending=null, pendingNuevoModulo=null;
+
+const THEMES=['morning','afternoon','night'];
+const TICO={'morning':'☀️','afternoon':'🌤️','night':'🌙'};
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  autoTheme(); tick(); setInterval(tick,30000);
+  aplicarModulos();
+  cargarFotoGuardada();
+  initSpeech();
+  initNotificaciones();
+  goMain('voz', document.querySelector('.mtab'));
+});
+
+// ── TEMA ──────────────────────────────────────────────────────────────────────
+function autoTheme(){const h=new Date().getHours();const a=h>=6&&h<12?'morning':h>=12&&h<18?'afternoon':'night';applyTheme(localStorage.getItem('vr_t')||a);}
+function cycleTheme(){const c=document.body.getAttribute('data-theme');applyTheme(THEMES[(THEMES.indexOf(c)+1)%3]);}
+function applyTheme(t){document.body.setAttribute('data-theme',t);localStorage.setItem('vr_t',t);document.getElementById('tcycle').textContent=TICO[t];}
+function tick(){
+  const n=new Date();
+  document.getElementById('dateEl').textContent=n.toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
+}
+
+// ── MÓDULOS OCULTOS ───────────────────────────────────────────────────────────
+function aplicarModulos(){
+  const activo = modulos.actividad;
+  document.getElementById('stab-actividad').style.display = activo ? 'block' : 'none';
+  document.getElementById('manActBtn').style.display = activo ? 'block' : 'none';
+}
+
+function activarModulo(){
+  if(!pendingNuevoModulo) return;
+  modulos.actividad = true;
+  localStorage.setItem('vr_mod', JSON.stringify(modulos));
+  aplicarModulos();
+  document.getElementById('activateBox').classList.remove('on');
+  // guardar el registro
+  guardarActividad(pendingNuevoModulo);
+  pendingNuevoModulo = null;
+  toast('✓ Módulo Actividad activado y registro guardado','s');
+}
+
+function rechazarModulo(){
+  document.getElementById('activateBox').classList.remove('on');
+  if(pendingNuevoModulo){
+    guardarActividad(pendingNuevoModulo);
+    pendingNuevoModulo = null;
+  }
+}
+
+// ── NAVEGACIÓN ────────────────────────────────────────────────────────────────
+let mainActual = 'voz';
+let subActual  = { eco:'ingresos', sal:'presion' };
+
+// ── SONIDOS ───────────────────────────────────────────────────────────────────
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function getAudio(){
+  if(!audioCtx) audioCtx = new AudioCtx();
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function sonarVoz(){
+  const ctx = getAudio();
+  // Estática corta de radio viejo
+  const buf = ctx.createBuffer(1, ctx.sampleRate * 0.12, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for(let i=0; i<data.length; i++) data[i] = (Math.random()*2-1) * (1 - i/data.length);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.18, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = 2200;
+  filter.Q.value = 0.8;
+  src.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  src.start();
+}
+
+function sonarEconomia(){
+  const ctx = getAudio();
+  // Dos tintineos metálicos
+  [0, 0.18].forEach(delay => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(1800, ctx.currentTime + delay);
+    osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + delay + 0.15);
+    gain.gain.setValueAtTime(0.22, ctx.currentTime + delay);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.2);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime + delay);
+    osc.stop(ctx.currentTime + delay + 0.22);
+  });
+}
+
+function sonarSalud(){
+  const ctx = getAudio();
+  // Dos latidos graves, pum pum
+  [0, 0.45].forEach(delay => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(80, ctx.currentTime + delay);
+    osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + delay + 0.18);
+    gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+    gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + delay + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.28);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime + delay);
+    osc.stop(ctx.currentTime + delay + 0.3);
+  });
+}
+
+const SONIDOS = { voz: sonarVoz, eco: sonarEconomia, sal: sonarSalud };
+const ANIM_ICO = { voz:'anim-mic', eco:'anim-money', sal:'anim-heart' };
+
+function goMain(name, btn){
+  mainActual = name;
+  document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  // Sonido
+  try{ if(SONIDOS[name]) SONIDOS[name](); }catch(e){}
+  // Animación del ícono
+  const ico=document.getElementById('ico-'+name);
+  if(ico){
+    ico.classList.remove(ANIM_ICO[name]);
+    void ico.offsetWidth;
+    ico.classList.add(ANIM_ICO[name]);
+    setTimeout(()=>ico.classList.remove(ANIM_ICO[name]),5200);
+  }
+  // submenús
+  document.getElementById('sub-eco').classList.toggle('on', name==='eco');
+  document.getElementById('sub-sal').classList.toggle('on', name==='sal');
+  ocultarTodo();
+  if(name==='voz'){
+    document.getElementById('tab-voz').classList.add('on');
+  } else if(name==='eco'){
+    mostrarSec('eco', subActual.eco);
+  } else if(name==='sal'){
+    mostrarSec('sal', subActual.sal);
+  }
+}
+
+function goSub(main, sub, btn){
+  subActual[main] = sub;
+  document.querySelectorAll(`#sub-${main} .stab`).forEach(t=>t.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  ocultarTodo();
+  // Mantener submenús visibles
+  document.getElementById('sub-eco').classList.toggle('on', mainActual==='eco');
+  document.getElementById('sub-sal').classList.toggle('on', mainActual==='sal');
+  mostrarSec(main, sub);
+}
+
+function ocultarTodo(){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+}
+
+function mostrarSec(main, sub){
+  const id = `tab-${main}-${sub}`;
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.add('on');
+  // Sincronizar tab activo en submenú
+  document.querySelectorAll(`#sub-${main} .stab`).forEach(t=>{
+    const onclick = t.getAttribute('onclick')||'';
+    t.classList.toggle('on', onclick.includes(`'${sub}'`));
+  });
+  if(main==='eco'){
+    if(sub==='ingresos')    renderIngresos();
+    if(sub==='egresos')     renderEgresos();
+    if(sub==='presupuesto') renderPresupuesto();
+    if(sub==='dashboard')   renderDashboard();
+  }
+  if(main==='sal'){
+    if(sub==='presion')      renderPresion();
+    if(sub==='peso')         renderPeso();
+    if(sub==='medicamentos') renderMedicamentos();
+    if(sub==='actividad')    renderActividad();
+  }
+}
+
+// ── SPEECH ────────────────────────────────────────────────────────────────────
+function initSpeech(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){setS('Voz no disponible. Usa captura manual.','err');document.getElementById('micBtn').style.opacity='.45';document.getElementById('micBtn').style.pointerEvents='none';return;}
+  recog=new SR(); recog.lang='es-MX'; recog.continuous=false; recog.interimResults=true;
+  recog.onresult=e=>{
+    let fin='',int='';
+    for(let i=e.resultIndex;i<e.results.length;i++) e.results[i].isFinal?fin+=e.results[i][0].transcript:int+=e.results[i][0].transcript;
+    const txt=fin||int;
+    const tb=document.getElementById('tbox'); tb.textContent=txt; tb.classList.add('act');
+    if(fin){ rawText=fin.trim(); stopListen(); detectarYProcesar(rawText); }
+  };
+  recog.onend=()=>stopListen();
+  recog.onerror=e=>{stopListen();if(e.error!=='aborted')setS('Error: '+e.error,'err');};
+}
+function togMic(){if(listening){recog.stop();}else{startListen();}}
+function startListen(){
+  if(!recog)return;
+  rawText='';
+  const tb=document.getElementById('tbox'); tb.innerHTML='<span class="ph">Escuchando…</span>'; tb.classList.remove('act');
+  document.getElementById('prev').classList.remove('on');
+  document.getElementById('activateBox').classList.remove('on');
+  document.getElementById('micBtn').classList.add('act');
+  document.getElementById('micIco').textContent='⏹';
+  document.getElementById('micSub').textContent='Detener';
+  setS('<span class="spin"></span>Escuchando…','ld');
+  listening=true; try{recog.start();}catch(e){}
+}
+function stopListen(){
+  listening=false;
+  document.getElementById('micBtn').classList.remove('act');
+  document.getElementById('micIco').textContent='🎙️';
+  document.getElementById('micSub').textContent='Voz';
+  if(!document.getElementById('prev').classList.contains('on'))
+    setS('Toca el micrófono y habla','');
+}
+
+// ── DETECCIÓN AUTOMÁTICA ──────────────────────────────────────────────────────
+function detectarTipo(t){
+  const txt=t.toLowerCase();
+  const nums = txt.match(/\b\d+\b/g);
+
+  // MÁXIMA PRIORIDAD: presión arterial
+  if(/pres[ií]on|sist[oó]lica|diast[oó]lica/.test(txt)) return 'presion';
+  // Patrón numérico de presión: "120 sobre 80" o "120/80"
+  if(/\b(1[0-9]{2}|[89][0-9])\s*(sobre|\/)\s*([5-9][0-9]|1[0-2][0-9])/.test(txt)) return 'presion';
+  // Tres números que encajan con presión/diastólica/pulso
+  if(nums && nums.length >= 2){
+    const n1=parseInt(nums[0]), n2=parseInt(nums[1]);
+    if(n1>=90&&n1<=200 && n2>=50&&n2<=130 && (n1-n2)>=20) return 'presion';
+  }
+
+  // MÁXIMA PRIORIDAD: peso corporal
+  if(/\bpeso\b|\bkilos?\b|\bkg\b/.test(txt) && nums) return 'peso';
+
+  // Actividad física
+  if(/nad[eé]|nadar|swim|piscina|alberca|mariposa|pecho libre|espalda|corr[ií]|correr|biciclet|pedale|ejerci|entrena|gym|gimnas/.test(txt)) return 'actividad';
+
+  // Ingreso
+  if(/me pagaron|me pag[oó]|cobr[eé]|ingres[eé]|\bingreso\b|\bingresos\b|gan[eé]|recibi[oó]|me deposit|entr[oó]|me entr/.test(txt)) return 'ingreso';
+
+  // Egreso explícito
+  if(/\begreso\b|\begresos\b|gast[eé]|gasté|compré|compr[eé]|pagu[eé]|pagué|sali[oó]/.test(txt) && nums) return 'egreso';
+
+  // Egreso por defecto si hay número
+  if(nums && nums.length > 0) return 'egreso';
+
+  return null;
+}
+
+function detectarCategoria(t){
+  const txt=t.toLowerCase();
+  if(/gasolina|gas\b|combustible|diesel|pemex/.test(txt))              return 'gasolina';
+  if(/comida|comer|taco|torta|refresco|agua|almuerzo|desayuno|cena|restaurant|fonda/.test(txt)) return 'comida';
+  if(/refacci[oó]n|aceite|llanta|freno|filtro|buj[ií]a|taller/.test(txt)) return 'refacciones';
+  if(/coppel|deuda|debo|prest|abono|mensualidad|tarjeta|cr[eé]dito/.test(txt)) return 'deudas';
+  if(/luz|tel[eé]fono|internet|renta|cable|servicio/.test(txt))        return 'servicios';
+  if(/doctor|medicina|farmacia|hospital|consulta/.test(txt))           return 'salud_gasto';
+  if(/casa|hogar|mueble|limpieza/.test(txt))                           return 'hogar';
+  if(/uber|taxi|camion|pasaje|transporte/.test(txt))                   return 'transporte';
+  return 'general';
+}
+
+function detectarYProcesar(text){
+  const tipo = detectarTipo(text);
+  if(!tipo){ setS('No entendí. Intenta de nuevo.','err'); return; }
+
+  // Actividad: verificar si el módulo está activo
+  if(tipo==='actividad' && !modulos.actividad){
+    const desc = limpiarConcepto(text);
+    pendingNuevoModulo = { descripcion: desc, texto: text };
+    document.getElementById('activateMsg').textContent = `"${desc}" — ¿Activar módulo de Actividad física?`;
+    document.getElementById('activateBox').classList.add('on');
+    setS('Nuevo módulo detectado','ok');
+    return;
+  }
+
+  procText(text, tipo);
+}
+
+function procText(text, tipo){
+  setS('Procesando…','ld');
+  const resultado = parsearTexto(text, tipo);
+  if(resultado){
+    pending={...resultado, tipo_reg:tipo};
+    showPrev(resultado, tipo);
+    setS('¿Es correcto?','');
+  } else {
+    setS('No entendí el monto. Intenta de nuevo.','err');
+  }
+}
+
+function parsearTexto(t, tipo){
+  const nums = t.match(/\d+([.,]\d+)?/g);
+  if(tipo==='presion'){
+    if(!nums||nums.length<2) return null;
+    return{sistolica:+nums[0],diastolica:+nums[1],pulso:nums[2]?+nums[2]:null};
+  }
+  if(tipo==='peso'){
+    if(!nums) return null;
+    return{valor:parseFloat(nums[0].replace(',','.'))};
+  }
+  if(tipo==='actividad'){
+    const desc=limpiarConcepto(t);
+    const dist=nums?parseFloat(nums[0].replace(',','.')):null;
+    return{descripcion:desc,distancia:dist};
+  }
+  if(!nums) return null;
+  const monto=Math.max(...nums.map(n=>parseFloat(n.replace(',','.'))));
+  const conc=limpiarConcepto(t);
+  const categoria=detectarCategoria(t);
+  return{tipo,concepto:conc,monto,categoria};
+}
+
+function limpiarConcepto(t){
+  return t
+    .replace(/\d+([.,]\d+)?/g,'')
+    .replace(/\b(gasté|gaste|compré|compre|pagué|pague|cobré|cobre|nad[eé]|corr[ií]|pesos?|mxn|kilos?|kg|en|de|por|un|una|unos|unas|el|la|los|las|y|a|me|le|les|que|se|hoy)\b/gi,' ')
+    .replace(/\s+/g,' ').trim().slice(0,50)||'sin descripción';
+}
+
+function showPrev(d, tipo){
+  const catRow=document.getElementById('prevCatRow');
+  if(tipo==='egreso'||tipo==='ingreso'){
+    document.getElementById('pTipo').textContent=tipo==='ingreso'?'↑ INGRESO':'↓ EGRESO';
+    document.getElementById('pTipo').className='pval '+tipo;
+    document.getElementById('pConc').textContent=d.concepto||'—';
+    document.getElementById('pVal').textContent='$'+Number(d.monto).toLocaleString('es-MX');
+    catRow.style.display='flex';
+    document.getElementById('pCat').value=d.categoria||'general';
+  } else if(tipo==='presion'){
+    catRow.style.display='none';
+    document.getElementById('pTipo').textContent='❤️ PRESIÓN';
+    document.getElementById('pTipo').className='pval presion';
+    document.getElementById('pConc').textContent=d.sistolica+' / '+d.diastolica;
+    document.getElementById('pVal').textContent=d.pulso?'Pulso: '+d.pulso:'Pulso: —';
+  } else if(tipo==='peso'){
+    catRow.style.display='none';
+    document.getElementById('pTipo').textContent='⚖️ PESO';
+    document.getElementById('pTipo').className='pval peso';
+    document.getElementById('pConc').textContent=d.valor+' kg';
+    document.getElementById('pVal').textContent='—';
+  } else if(tipo==='actividad'){
+    catRow.style.display='none';
+    document.getElementById('pTipo').textContent='🏃 ACTIVIDAD';
+    document.getElementById('pTipo').className='pval actividad';
+    document.getElementById('pConc').textContent=d.descripcion||'—';
+    document.getElementById('pVal').textContent=d.distancia?d.distancia+' km/min':'—';
+  }
+  document.getElementById('prev').classList.add('on');
+}
+
+function confirmE(){
+  if(!pending)return;
+  const t=pending.tipo_reg;
+  if(t==='egreso'||t==='ingreso'){
+    const cat=document.getElementById('pCat').value;
+    guardarFinanza({tipo:t,concepto:pending.concepto,monto:pending.monto,categoria:cat});
+  } else if(t==='presion'||t==='peso'){
+    guardarSalud({tipo:t,...pending});
+  } else if(t==='actividad'){
+    guardarActividad(pending);
+  }
+  pending=null;
+  document.getElementById('prev').classList.remove('on');
+  document.getElementById('tbox').innerHTML='<span class="ph">Lo que digas aparecerá aquí…</span>';
+  document.getElementById('tbox').classList.remove('act');
+  setS('Toca el micrófono y habla','');
+}
+
+function cancelE(){
+  pending=null;
+  document.getElementById('prev').classList.remove('on');
+  document.getElementById('tbox').innerHTML='<span class="ph">Lo que digas aparecerá aquí…</span>';
+  setS('Cancelado.','');
+}
+
+// ── MANUAL ────────────────────────────────────────────────────────────────────
+function togManual(){manOpen=!manOpen;document.getElementById('mform').classList.toggle('on',manOpen);if(manOpen)setManSub('fin',document.querySelector('#mfSelector .fbtn'));}
+function setManSub(s,btn){
+  manSub=s;
+  document.querySelectorAll('#mfSelector .fbtn').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  document.getElementById('mfFin').style.display  =s==='fin'?'block':'none';
+  document.getElementById('mfBP').style.display   =s==='bp'?'block':'none';
+  document.getElementById('mfPeso').style.display =s==='peso'?'block':'none';
+  document.getElementById('mfAct').style.display  =s==='act'?'block':'none';
+}
+function setMT(t){
+  mtype=t;
+  document.getElementById('bEgr').style.cssText=t==='egreso'?'border-color:var(--red);color:var(--red)':'border-color:var(--border);color:var(--muted)';
+  document.getElementById('bIng').style.cssText=t==='ingreso'?'border-color:var(--green);color:var(--green)':'border-color:var(--border);color:var(--muted)';
+}
+function saveMan(){
+  if(manSub==='fin'){
+    const c=document.getElementById('mConc').value.trim();
+    const m=parseFloat(document.getElementById('mMonto').value);
+    const cat=document.getElementById('mCat').value;
+    if(!c||isNaN(m)||m<=0){toast('Llena concepto y monto','e');return;}
+    guardarFinanza({tipo:mtype,concepto:c,monto:m,categoria:cat});
+    document.getElementById('mConc').value='';document.getElementById('mMonto').value='';document.getElementById('mCat').value='general';
+  } else if(manSub==='bp'){
+    const s=parseInt(document.getElementById('bpS').value),d=parseInt(document.getElementById('bpD').value),p=parseInt(document.getElementById('bpP').value);
+    if(isNaN(s)||isNaN(d)){toast('Ingresa sistólica y diastólica','e');return;}
+    guardarSalud({tipo:'presion',sistolica:s,diastolica:d,pulso:isNaN(p)?null:p});
+    ['bpS','bpD','bpP'].forEach(id=>document.getElementById(id).value='');
+  } else if(manSub==='peso'){
+    const v=parseFloat(document.getElementById('pesoV').value);
+    if(isNaN(v)||v<=0){toast('Ingresa tu peso','e');return;}
+    guardarSalud({tipo:'peso',valor:v});document.getElementById('pesoV').value='';
+  } else if(manSub==='act'){
+    const desc=document.getElementById('actDesc').value.trim();
+    const dist=parseFloat(document.getElementById('actDist').value);
+    if(!desc){toast('Describe la actividad','e');return;}
+    guardarActividad({descripcion:desc,distancia:isNaN(dist)?null:dist});
+    document.getElementById('actDesc').value='';document.getElementById('actDist').value='';
+  }
+}
+
+// ── GUARDAR DATOS ─────────────────────────────────────────────────────────────
+function guardarFinanza(d){
+  const e={id:Date.now(),tipo:d.tipo,concepto:d.concepto,monto:parseFloat(d.monto),categoria:d.categoria||'general',fecha:new Date().toISOString()};
+  finanzas.unshift(e); localStorage.setItem('vr_fin',JSON.stringify(finanzas));
+  toast(e.tipo==='ingreso'?'✓ Ingreso guardado':'✓ Egreso guardado','s');
+}
+function guardarSalud(d){
+  const e={id:Date.now(),...d,fecha:new Date().toISOString()};
+  salud.unshift(e); localStorage.setItem('vr_sal',JSON.stringify(salud));
+  toast(d.tipo==='presion'?'✓ Presión guardada':'✓ Peso guardado','s');
+}
+function guardarActividad(d){
+  const e={id:Date.now(),descripcion:d.descripcion,distancia:d.distancia||null,fecha:new Date().toISOString()};
+  actividad.unshift(e); localStorage.setItem('vr_act',JSON.stringify(actividad));
+  toast('✓ Actividad guardada','s');
+}
+function eliminar(id, tipo){
+  if(!confirm('¿Borrar este registro?')) return;
+  const numId = Number(id);
+  if(tipo==='fin'){
+    finanzas=finanzas.filter(e=>e.id!==numId);
+    localStorage.setItem('vr_fin',JSON.stringify(finanzas));
+  } else if(tipo==='sal'){
+    salud=salud.filter(e=>e.id!==numId);
+    localStorage.setItem('vr_sal',JSON.stringify(salud));
+  } else {
+    actividad=actividad.filter(e=>e.id!==numId);
+    localStorage.setItem('vr_act',JSON.stringify(actividad));
+  }
+  // Refrescar la sección actual
+  if(mainActual==='eco') mostrarSec('eco', subActual.eco);
+  else if(mainActual==='sal') mostrarSec('sal', subActual.sal);
+  else renderDashboard();
+  toast('Eliminado','');
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function fmt(n){return Number(n).toLocaleString('es-MX');}
+function fmtFecha(f){const d=new Date(f);return d.toLocaleDateString('es-MX',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});}
+function mesActual(e){const d=new Date(e.fecha),n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}
+
+let ingPeriodo = 'semana'; // 'semana' o 'mes'
+
+function toggleIngPeriodo(){
+  ingPeriodo = ingPeriodo === 'semana' ? 'mes' : 'semana';
+  renderIngresos();
+}
+
+function filterIngLista(fil, btn){
+  document.querySelectorAll('#tab-eco-ingresos .fbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const now = new Date();
+  const diaSemana = now.getDay()===0?6:now.getDay()-1;
+  const inicioSemana = new Date(now);
+  inicioSemana.setDate(now.getDate()-diaSemana);
+  inicioSemana.setHours(0,0,0,0);
+  const lst = fil==='semana' ? finanzas.filter(e=>e.tipo==='ingreso'&&new Date(e.fecha)>=inicioSemana) :
+              fil==='mes'    ? finanzas.filter(e=>e.tipo==='ingreso'&&mesActual(e)) :
+              finanzas.filter(e=>e.tipo==='ingreso');
+  const el=document.getElementById('listaIngresos');
+  if(!lst.length){el.innerHTML='<div class="empty">Sin ingresos en este período.</div>';return;}
+  el.innerHTML=lst.map(e=>finHTML(e,true)).join('');
+}
+
+function renderIngresos(fil='todos'){
+  const now = new Date();
+
+  // Semana: lunes a domingo
+  const diaSemana = now.getDay()===0?6:now.getDay()-1;
+  const inicioSemana = new Date(now);
+  inicioSemana.setDate(now.getDate()-diaSemana);
+  inicioSemana.setHours(0,0,0,0);
+  const finSemana = new Date(inicioSemana);
+  finSemana.setDate(inicioSemana.getDate()+6);
+
+  const ingSemana = finanzas.filter(e=>e.tipo==='ingreso'&&new Date(e.fecha)>=inicioSemana);
+  const ingMes    = finanzas.filter(e=>e.tipo==='ingreso'&&mesActual(e));
+  const totalSemana = ingSemana.reduce((s,e)=>s+e.monto,0);
+  const totalMes    = ingMes.reduce((s,e)=>s+e.monto,0);
+
+  // Calcular barra según período activo
+  if(ingPeriodo==='semana'){
+    // Barra: días transcurridos de la semana / 7
+    const diasSemana = diaSemana + 1; // días desde lunes hasta hoy
+    const pct = Math.round((diasSemana/7)*100);
+    const lunesStr = inicioSemana.toLocaleDateString('es-MX',{day:'numeric',month:'short'});
+    const domStr   = finSemana.toLocaleDateString('es-MX',{day:'numeric',month:'short'});
+    document.getElementById('ingPeriodoLabel').textContent = '📅 Esta semana';
+    document.getElementById('ingBarPeriodo').style.width = pct+'%';
+    document.getElementById('ingPeriodoAmt').textContent = '$'+fmt(totalSemana);
+    document.getElementById('ingPeriodoInfo').textContent = ingSemana.length+' ingreso'+(ingSemana.length!==1?'s':'')+'\nDía '+diasSemana+' de 7';
+    document.getElementById('ingPeriodoRango').textContent = lunesStr+' – '+domStr;
+  } else {
+    // Barra: días transcurridos del mes / días totales del mes
+    const diasMes = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    const diaHoy  = now.getDate();
+    const pct = Math.round((diaHoy/diasMes)*100);
+    const ms=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const promDia = diaHoy>0?(totalMes/diaHoy).toFixed(0):0;
+    document.getElementById('ingPeriodoLabel').textContent = '🗓 Este mes';
+    document.getElementById('ingBarPeriodo').style.width = pct+'%';
+    document.getElementById('ingPeriodoAmt').textContent = '$'+fmt(totalMes);
+    document.getElementById('ingPeriodoInfo').textContent = ingMes.length+' ingreso'+(ingMes.length!==1?'s':'')+'\n$'+fmt(promDia)+'/día promedio';
+    document.getElementById('ingPeriodoRango').textContent = ms[now.getMonth()]+' '+now.getFullYear()+' · Día '+diaHoy+' de '+diasMes;
+  }
+
+  // Lista
+  const lst = fil==='semana' ? ingSemana :
+              fil==='mes'    ? ingMes :
+              finanzas.filter(e=>e.tipo==='ingreso');
+  const el=document.getElementById('listaIngresos');
+  if(!lst.length){el.innerHTML='<div class="empty">Sin ingresos.<br>Di <strong>"me pagaron 800"</strong></div>';return;}
+  el.innerHTML=lst.map(e=>finHTML(e,true)).join('');
+}
+
+function renderEgresos(){
+  const lst=finanzas.filter(e=>e.tipo==='egreso');
+  const el=document.getElementById('listaEgresos');
+  // Filtros de categoría dinámicos
+  const cats=[...new Set(lst.map(e=>e.categoria||'general'))];
+  const fr=document.getElementById('catFiltros');
+  fr.innerHTML='<button class="fbtn on" onclick="filtrarEgresos(\'todos\',this)">Todos</button>'+
+    cats.map(c=>`<button class="fbtn" onclick="filtrarEgresos('${c}',this)">${c}</button>`).join('');
+  if(!lst.length){el.innerHTML='<div class="empty">Sin egresos.<br>Di <strong>"gasté 150 en gasolina"</strong></div>';return;}
+  el.innerHTML=lst.map(e=>finHTML(e,true)).join('');
+}
+
+function filtrarEgresos(cat,btn){
+  document.querySelectorAll('#catFiltros .fbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const lst=cat==='todos'?finanzas.filter(e=>e.tipo==='egreso'):finanzas.filter(e=>e.tipo==='egreso'&&e.categoria===cat);
+  const el=document.getElementById('listaEgresos');
+  if(!lst.length){el.innerHTML='<div class="empty">Sin egresos en esta categoría.</div>';return;}
+  el.innerHTML=lst.map(e=>finHTML(e,true)).join('');
+}
+
+function renderPresupuesto(){
+  const gastoMes=finanzas.filter(e=>e.tipo==='egreso'&&mesActual(e)).reduce((s,e)=>s+e.monto,0);
+  document.getElementById('presGastado').textContent='$'+fmt(gastoMes)+' gastado';
+  document.getElementById('presLimite').textContent=presupuesto>0?'$'+fmt(presupuesto)+' límite':'Sin límite definido';
+  const pct=presupuesto>0?Math.min((gastoMes/presupuesto)*100,100):0;
+  const bar=document.getElementById('presBar');
+  bar.style.width=pct+'%';
+  bar.className='pres-bar'+(pct>=100?' over':pct>=80?' warn':'');
+
+  // Mensaje de saldo
+  const msg=document.getElementById('presMensaje');
+  if(presupuesto>0){
+    msg.style.display='block';
+    const restante=presupuesto-gastoMes;
+    if(restante>0){
+      const color=pct>=80?'var(--gold)':'var(--green)';
+      msg.style.background=pct>=80?'rgba(212,134,10,.1)':'rgba(26,168,110,.1)';
+      msg.style.color=color;
+      msg.style.border=`1px solid ${color}`;
+      msg.textContent=pct>=80
+        ?`⚠️ ¡Cuidado! Te quedan $${fmt(restante)} del presupuesto`
+        :`✓ Te quedan $${fmt(restante)} del presupuesto este mes`;
+    } else {
+      msg.style.background='rgba(224,69,90,.08)';
+      msg.style.color='var(--red)';
+      msg.style.border='1px solid var(--red)';
+      msg.textContent=`🚨 Te pasaste $${fmt(Math.abs(restante))} de tu límite`;
+    }
+  } else {
+    msg.style.display='none';
+  }
+
+  // Desglose por categoría
+  const cats={};
+  finanzas.filter(e=>e.tipo==='egreso'&&mesActual(e)).forEach(e=>{
+    const c=e.categoria||'general';
+    cats[c]=(cats[c]||0)+e.monto;
+  });
+  const el=document.getElementById('listaCats');
+  const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  if(!sorted.length){el.innerHTML='<div class="empty">Sin egresos este mes.</div>';return;}
+  el.innerHTML=sorted.map(([cat,total])=>`
+    <div class="ei">
+      <div class="edot egreso"></div>
+      <div class="einf"><div class="econc">${cat}</div></div>
+      <div class="eamt egreso">$${fmt(total)}</div>
+    </div>`).join('');
+}
+
+function togPresForm(){document.getElementById('presForm').classList.toggle('on');}
+function guardarPresupuesto(){
+  const v=parseFloat(document.getElementById('presInput').value);
+  if(isNaN(v)||v<=0){toast('Ingresa un monto válido','e');return;}
+  presupuesto=v; localStorage.setItem('vr_pres',v);
+  document.getElementById('presForm').classList.remove('on');
+  document.getElementById('presInput').value='';
+  renderPresupuesto(); toast('✓ Presupuesto guardado','s');
+}
+
+function renderDashboard(){
+  const now=new Date();
+
+  // ── MES ──
+  const me=finanzas.filter(mesActual);
+  const ing=me.filter(e=>e.tipo==='ingreso'), egr=me.filter(e=>e.tipo==='egreso');
+  const tI=ing.reduce((s,e)=>s+e.monto,0), tE=egr.reduce((s,e)=>s+e.monto,0), bal=tI-tE;
+  const ba=document.getElementById('balAmt');
+  const balLabel=document.getElementById('balLabel');
+  ba.textContent=(bal>=0?'':'-')+'$'+fmt(Math.abs(bal));
+  ba.className='bal-amt'+(bal<0?' neg':'');
+  if(tI===0&&tE===0){
+    balLabel.textContent='Sin movimientos este mes';
+  } else if(bal>=0){
+    balLabel.textContent='Te quedan este mes';
+  } else {
+    balLabel.textContent='Te pasaste este mes por';
+  }
+  const ms=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  document.getElementById('balMeta').textContent=ms[now.getMonth()]+' '+now.getFullYear();
+  document.getElementById('tIng').textContent='$'+fmt(tI);document.getElementById('cIng').textContent=ing.length+' registro'+(ing.length!==1?'s':'');
+  document.getElementById('tEgr').textContent='$'+fmt(tE);document.getElementById('cEgr').textContent=egr.length+' registro'+(egr.length!==1?'s':'');
+
+  // ── SEMANA ──
+  const diaSem=now.getDay()===0?6:now.getDay()-1;
+  const inicioSem=new Date(now); inicioSem.setDate(now.getDate()-diaSem); inicioSem.setHours(0,0,0,0);
+  const semIng=finanzas.filter(e=>e.tipo==='ingreso'&&new Date(e.fecha)>=inicioSem).reduce((s,e)=>s+e.monto,0);
+  const semEgr=finanzas.filter(e=>e.tipo==='egreso'&&new Date(e.fecha)>=inicioSem).reduce((s,e)=>s+e.monto,0);
+  document.getElementById('dashSemIng').textContent='$'+fmt(semIng);
+  document.getElementById('dashSemEgr').textContent='$'+fmt(semEgr);
+  const balSem=semIng-semEgr;
+  const tendEl=document.getElementById('dashSemTend');
+  if(semIng===0&&semEgr===0){ tendEl.textContent='Sin movimientos esta semana'; tendEl.style.color='var(--muted)'; }
+  else if(balSem>=0){ tendEl.textContent='↑ Semana positiva +$'+fmt(balSem); tendEl.style.color='var(--green)'; }
+  else { tendEl.textContent='↓ Semana negativa -$'+fmt(Math.abs(balSem)); tendEl.style.color='var(--red)'; }
+
+  // ── GRÁFICAS ──
+  setTimeout(()=>{ dibujarDona(tI, tE); dibujarBarrasDiarias(); }, 50);
+
+  // ── RECIENTES ──
+  const recent=finanzas.slice(0,8);
+  const el=document.getElementById('listaReciente');
+  if(!recent.length){el.innerHTML='<div class="empty">Sin registros.</div>';return;}
+  el.innerHTML=recent.map(e=>finHTML(e,true)).join('');
+}
+
+function dibujarDona(ing, egr){
+  const canvas=document.getElementById('donaChart');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  const cx=W/2, cy=H/2, r=Math.min(W,H)/2-6, ri=r*0.58;
+  ctx.clearRect(0,0,W,H);
+
+  const st=getComputedStyle(document.body);
+  const cG=st.getPropertyValue('--green').trim();
+  const cR=st.getPropertyValue('--red').trim();
+  const cB=st.getPropertyValue('--border').trim();
+  const cT=st.getPropertyValue('--text').trim();
+
+  const total=ing+egr;
+
+  if(total===0){
+    // Dona vacía
+    ctx.beginPath();
+    ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.arc(cx,cy,ri,0,Math.PI*2,true);
+    ctx.fillStyle=cB;
+    ctx.fill('evenodd');
+    ctx.fillStyle=cT;
+    ctx.font='bold 11px Nunito,sans-serif';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText('—',cx,cy);
+    return;
+  }
+
+  const angIng=(ing/total)*Math.PI*2;
+  const angEgr=(egr/total)*Math.PI*2;
+  const start=-Math.PI/2;
+
+  // Segmento ingreso
+  if(ing>0){
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,start,start+angIng);
+    ctx.arc(cx,cy,ri,start+angIng,start,true);
+    ctx.closePath();
+    ctx.fillStyle=cG;
+    ctx.fill();
+  }
+
+  // Segmento egreso
+  if(egr>0){
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,start+angIng,start+angIng+angEgr);
+    ctx.arc(cx,cy,ri,start+angIng+angEgr,start+angIng,true);
+    ctx.closePath();
+    ctx.fillStyle=cR;
+    ctx.fill();
+  }
+
+  // Hueco central con porcentaje de lo que queda
+  ctx.beginPath();
+  ctx.arc(cx,cy,ri-1,0,Math.PI*2);
+  ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--surface').trim();
+  ctx.fill();
+
+  // Texto central
+  const pct=ing>0?Math.round((ing-egr)/ing*100):0;
+  ctx.fillStyle=pct>=0?cG:cR;
+  ctx.font='bold 14px Nunito,sans-serif';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText((pct>=0?'+':'')+pct+'%',cx,cy);
+}
+
+function dibujarBarrasDiarias(){
+  const now = new Date();
+  const canvas = document.getElementById('dashBarChart');
+  if(!canvas) return;
+  canvas.width = canvas.offsetWidth || 300;
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  const PAD={top:14,right:10,bottom:24,left:10};
+  const gW=W-PAD.left-PAD.right, gH=H-PAD.top-PAD.bottom;
+  ctx.clearRect(0,0,W,H);
+
+  const st=getComputedStyle(document.body);
+  const cG=st.getPropertyValue('--green').trim();
+  const cR=st.getPropertyValue('--red').trim();
+  const cM=st.getPropertyValue('--muted').trim();
+  const cB=st.getPropertyValue('--border').trim();
+  const cA=st.getPropertyValue('--accent').trim();
+
+  // Calcular semanas del mes (lunes a sábado)
+  const year=now.getFullYear(), month=now.getMonth();
+  const primerDia=new Date(year,month,1);
+  const ultimoDia=new Date(year,month+1,0);
+
+  // Encontrar el primer lunes del mes (o antes)
+  let lunesInicio=new Date(primerDia);
+  const diaSemPrimero=primerDia.getDay()===0?6:primerDia.getDay()-1;
+  lunesInicio.setDate(primerDia.getDate()-diaSemPrimero);
+
+  // Generar semanas
+  const semanas=[];
+  let cursor=new Date(lunesInicio);
+  while(cursor<=ultimoDia){
+    const lunes=new Date(cursor);
+    const sabado=new Date(cursor); sabado.setDate(cursor.getDate()+5);
+    const domingo=new Date(cursor); domingo.setDate(cursor.getDate()+6);
+    // Solo incluir semanas que tengan días en el mes actual
+    if(sabado>=primerDia && lunes<=ultimoDia){
+      semanas.push({
+        lunes:new Date(lunes),
+        sabado:new Date(sabado),
+        domingo:new Date(domingo),
+        esActual: now>=lunes && now<=domingo
+      });
+    }
+    cursor.setDate(cursor.getDate()+7);
+  }
+
+  // Sumar ingresos y egresos por semana
+  const datos=semanas.map(sem=>{
+    const ing=finanzas.filter(e=>e.tipo==='ingreso'&&new Date(e.fecha)>=sem.lunes&&new Date(e.fecha)<=sem.domingo).reduce((s,e)=>s+e.monto,0);
+    const egr=finanzas.filter(e=>e.tipo==='egreso' &&new Date(e.fecha)>=sem.lunes&&new Date(e.fecha)<=sem.domingo).reduce((s,e)=>s+e.monto,0);
+    return{ing,egr,...sem};
+  });
+
+  const maxVal=Math.max(...datos.flatMap(d=>[d.ing,d.egr]),1);
+  const n=semanas.length;
+  const grupW=gW/n;
+  const barW=Math.min(grupW*0.35, 22);
+
+  // Línea base
+  ctx.strokeStyle=cB; ctx.lineWidth=0.5;
+  ctx.beginPath(); ctx.moveTo(PAD.left,PAD.top+gH); ctx.lineTo(PAD.left+gW,PAD.top+gH); ctx.stroke();
+
+  datos.forEach((d,i)=>{
+    const cx=PAD.left+i*grupW+grupW/2;
+
+    // Fondo semana actual
+    if(d.esActual){
+      ctx.fillStyle='rgba(0,0,0,0.04)';
+      ctx.beginPath();
+      ctx.roundRect(cx-grupW/2+2, PAD.top, grupW-4, gH, 6);
+      ctx.fill();
+    }
+
+    // Barra ingreso
+    if(d.ing>0){
+      const h=(d.ing/maxVal)*gH;
+      ctx.fillStyle=cG;
+      ctx.beginPath();
+      ctx.roundRect(cx-barW-1, PAD.top+gH-h, barW, h, [3,3,0,0]);
+      ctx.fill();
+      // Valor encima
+      ctx.fillStyle=cG; ctx.font='bold 8px DM Mono,monospace'; ctx.textAlign='center';
+      ctx.fillText('$'+fmt(Math.round(d.ing/1000)>0?Math.round(d.ing/1000)+'k':d.ing), cx-barW/2-1, PAD.top+gH-h-3);
+    }
+
+    // Barra egreso
+    if(d.egr>0){
+      const h=(d.egr/maxVal)*gH;
+      ctx.fillStyle=cR;
+      ctx.beginPath();
+      ctx.roundRect(cx+1, PAD.top+gH-h, barW, h, [3,3,0,0]);
+      ctx.fill();
+      ctx.fillStyle=cR; ctx.font='bold 8px DM Mono,monospace'; ctx.textAlign='center';
+      ctx.fillText('$'+fmt(Math.round(d.egr/1000)>0?Math.round(d.egr/1000)+'k':d.egr), cx+barW/2+1, PAD.top+gH-h-3);
+    }
+
+    // Etiqueta semana
+    const lbl='S'+(i+1);
+    const sublbl=d.lunes.getDate()+'–'+Math.min(d.sabado.getDate(), ultimoDia.getDate());
+    ctx.fillStyle=d.esActual?cA:cM;
+    ctx.font=d.esActual?'bold 9px DM Mono,monospace':'9px DM Mono,monospace';
+    ctx.textAlign='center';
+    ctx.fillText(lbl, cx, H-12);
+    ctx.font='8px DM Mono,monospace';
+    ctx.fillStyle=cM;
+    ctx.fillText(sublbl, cx, H-3);
+  });
+}
+
+function renderPresion(){
+  const bp=salud.filter(e=>e.tipo==='presion');
+  const el=document.getElementById('listaBP');
+  if(!bp.length){el.innerHTML='<div class="empty">Sin mediciones.<br>Di <strong>"presión 120 sobre 80"</strong></div>';}
+  else el.innerHTML=bp.map(e=>bpHTML(e)).join('');
+  const avg=a=>a.length?Math.round(a.reduce((s,v)=>s+v,0)/a.length):null;
+  const aS=avg(bp.map(e=>e.sistolica)),aD=avg(bp.map(e=>e.diastolica)),aP=avg(bp.filter(e=>e.pulso).map(e=>e.pulso));
+  const cl=aS?(aS>=140||aD>=90?'hi':aS<=100?'lo':'ok'):'';
+  document.getElementById('avgS').textContent=aS||'—';document.getElementById('avgS').className='bpval '+cl;
+  document.getElementById('avgD').textContent=aD||'—';document.getElementById('avgP').textContent=aP||'—';
+  // Banner de estado
+  const sb=document.getElementById('bpStatus');
+  if(bp.length){
+    const u=bp[0];
+    if(u.sistolica>=140||u.diastolica>=90){sb.textContent='⚠️ Última medición: Presión ALTA — '+u.sistolica+'/'+u.diastolica;sb.className='status-banner on alta';}
+    else if(u.sistolica<=100){sb.textContent='📉 Última medición: Presión BAJA — '+u.sistolica+'/'+u.diastolica;sb.className='status-banner on baja';}
+    else{sb.textContent='✓ Última medición: Presión NORMAL — '+u.sistolica+'/'+u.diastolica;sb.className='status-banner on normal';}
+  } else sb.className='status-banner';
+  setTimeout(()=>dibujarBP(bp.slice().reverse()),50);
+}
+
+function renderPeso(){
+  const pw=salud.filter(e=>e.tipo==='peso');
+  const el=document.getElementById('listaPeso');
+  if(!pw.length){el.innerHTML='<div class="empty">Sin registros.<br>Di <strong>"peso 78 kilos"</strong></div>';}
+  else el.innerHTML=pw.map(e=>pesoHTML(e)).join('');
+  // Banner de estado IMC
+  const sb=document.getElementById('pesoStatus');
+  if(pw.length && perfil.estatura){
+    const imc=calcularIMC(pw[0].valor,perfil.estatura);
+    const cl=clasificarIMC(imc);
+    if(cl){
+      const estado=parseFloat(imc)<18.5?'baja':parseFloat(imc)<25?'normal':'alta';
+      const ico=parseFloat(imc)<18.5?'📉 ':parseFloat(imc)<25?'✓ ':'⚠️ ';
+      sb.textContent=ico+cl.texto+' · Último peso: '+pw[0].valor+' kg';
+      sb.className='status-banner on '+(parseFloat(imc)<25?'normal':'baja');
+    } else sb.className='status-banner';
+  } else if(pw.length){
+    sb.textContent='⚖️ Último peso: '+pw[0].valor+' kg · Agrega tu estatura en el perfil para ver el IMC';
+    sb.className='status-banner on baja';
+  } else sb.className='status-banner';
+  setTimeout(()=>dibujarPeso(pw.slice().reverse()),50);
+}
+
+function renderActividad(){
+  // Banner de estado actividad
+  const sb=document.getElementById('actStatus');
+  if(actividad.length){
+    const hace7=new Date(); hace7.setDate(hace7.getDate()-7);
+    const recientes=actividad.filter(e=>new Date(e.fecha)>=hace7);
+    if(recientes.length>=3){sb.textContent='🔥 ¡Excelente! '+recientes.length+' actividades en los últimos 7 días — sigue así';sb.className='status-banner on activo';}
+    else if(recientes.length>0){sb.textContent='💪 '+recientes.length+' actividad'+(recientes.length>1?'es':'')+' esta semana — puedes hacer más';sb.className='status-banner on activo';}
+    else{sb.textContent='😴 Sin actividad en los últimos 7 días — ¡muévete!';sb.className='status-banner on inactivo';}
+  } else sb.className='status-banner';
+  const el=document.getElementById('listaActividad');
+  if(!actividad.length){el.innerHTML='<div class="empty">Sin actividades registradas.</div>';return;}
+  el.innerHTML=actividad.map(e=>`
+    <div class="ei" onclick="this.classList.toggle('sd')">
+      <div class="edot actividad"></div>
+      <div class="einf"><div class="econc">🏃 ${e.descripcion}</div><div class="etim">${fmtFecha(e.fecha)}${e.distancia?' · '+e.distancia+' km':''}</div></div>
+      <div class="eamt actividad">${e.distancia?e.distancia+'km':'—'}</div>
+      <button class="delbtn" onclick="event.stopPropagation();eliminar(${e.id},'act')">🗑 Borrar</button>
+    </div>`).join('');
+}
+
+// ── HTML ENTRIES ──────────────────────────────────────────────────────────────
+function finHTML(e,del){
+  const s=e.tipo==='ingreso'?'+':'-';
+  const cat=e.categoria&&e.categoria!=='general'?' · '+e.categoria:'';
+  return`<div class="ei" onclick="this.classList.toggle('sd')">
+    <div class="edot ${e.tipo}"></div>
+    <div class="einf"><div class="econc">${e.concepto}</div><div class="etim">${fmtFecha(e.fecha)}${cat}</div></div>
+    <div class="eamt ${e.tipo}">${s}$${fmt(e.monto)}</div>
+    ${del?`<button class="delbtn" style="right:68px" onclick="event.stopPropagation();eliminar(${e.id},'fin')">🗑 Borrar</button>
+    <button class="delbtn" style="right:9px;background:rgba(26,143,196,.1);border-color:rgba(26,143,196,.3);color:var(--accent)" onclick="event.stopPropagation();abrirEdicion(${e.id},'fin','${e.concepto.replace(/'/g,"\\'")}',${e.monto})">✏️ Editar</button>`:''}
+  </div>`;
+}
+function bpHTML(e){
+  const ic=e.sistolica>=140||e.diastolica>=90?'⚠️':e.sistolica<=100?'📉':'✓';
+  return`<div class="ei" onclick="this.classList.toggle('sd')">
+    <div class="edot presion"></div>
+    <div class="einf"><div class="econc">${ic} ${e.sistolica}/${e.diastolica}${e.pulso?' · '+e.pulso+' ppm':''}</div><div class="etim">${fmtFecha(e.fecha)}</div></div>
+    <div class="eamt presion">❤️</div>
+    <button class="delbtn" onclick="event.stopPropagation();eliminar(${e.id},'sal')">🗑 Borrar</button>
+  </div>`;
+}
+function pesoHTML(e){
+  return`<div class="ei" onclick="this.classList.toggle('sd')">
+    <div class="edot peso"></div>
+    <div class="einf"><div class="econc">⚖️ ${e.valor} kg</div><div class="etim">${fmtFecha(e.fecha)}</div></div>
+    <div class="eamt peso">${e.valor}kg</div>
+    <button class="delbtn" onclick="event.stopPropagation();eliminar(${e.id},'sal')">🗑 Borrar</button>
+  </div>`;
+}
+
+// ── GRÁFICAS ──────────────────────────────────────────────────────────────────
+function dibujarBP(bp){
+  const wrap=document.getElementById('bpChartWrap');
+  if(bp.length<2){wrap.classList.remove('on');return;}
+  wrap.classList.add('on');
+  const canvas=document.getElementById('bpChart');
+  canvas.width=canvas.offsetWidth||300;
+  const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
+  const PAD={top:20,right:16,bottom:28,left:36},gW=W-PAD.left-PAD.right,gH=H-PAD.top-PAD.bottom;
+  const all=[...bp.map(e=>e.sistolica),...bp.map(e=>e.diastolica)];
+  const minV=Math.min(...all)-10,maxV=Math.max(...all)+10,rng=maxV-minV;
+  const st=getComputedStyle(document.body);
+  const cR=st.getPropertyValue('--red').trim(),cB=st.getPropertyValue('--blue').trim(),cM=st.getPropertyValue('--muted').trim(),cBd=st.getPropertyValue('--border').trim();
+  ctx.clearRect(0,0,W,H);
+  function yP(v){return PAD.top+gH-((v-minV)/rng*gH);}
+  function xP(i){return PAD.left+(i/(bp.length-1))*gW;}
+  ctx.strokeStyle=cBd;ctx.lineWidth=0.5;
+  [minV+10,minV+20,minV+30].forEach(v=>{if(v>minV&&v<maxV){ctx.beginPath();ctx.moveTo(PAD.left,yP(v));ctx.lineTo(PAD.left+gW,yP(v));ctx.stroke();ctx.fillStyle=cM;ctx.font='9px DM Mono,monospace';ctx.textAlign='right';ctx.fillText(Math.round(v),PAD.left-4,yP(v)+3);}});
+  if(140>=minV&&140<=maxV){ctx.strokeStyle='rgba(224,69,90,.25)';ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(PAD.left,yP(140));ctx.lineTo(PAD.left+gW,yP(140));ctx.stroke();ctx.setLineDash([]);}
+  // Zona verde normal (sistólica 90–139)
+  const zY1=yP(Math.min(139,maxV)),zY2=yP(Math.max(90,minV));
+  if(zY1<zY2){ctx.fillStyle='rgba(29,168,110,0.07)';ctx.fillRect(PAD.left,zY1,gW,zY2-zY1);}
+  // Líneas
+  function linea(datos,color){ctx.strokeStyle=color;ctx.lineWidth=2;ctx.lineJoin='round';ctx.beginPath();datos.forEach((v,i)=>i===0?ctx.moveTo(xP(i),yP(v)):ctx.lineTo(xP(i),yP(v)));ctx.stroke();}
+  linea(bp.map(e=>e.diastolica),cB);linea(bp.map(e=>e.sistolica),cR);
+  // Puntos coloreados por estado
+  bp.forEach((e,i)=>{
+    const dot=e.sistolica>=140||e.diastolica>=90?'#e07a30':e.sistolica<=100?cM:cG;
+    [e.sistolica,e.diastolica].forEach(v=>{ctx.fillStyle=dot;ctx.beginPath();ctx.arc(xP(i),yP(v),4,0,Math.PI*2);ctx.fill();});
+  });
+  ctx.fillStyle=cM;ctx.font='9px DM Mono,monospace';ctx.textAlign='center';
+  const paso=Math.ceil(bp.length/5);
+  bp.forEach((e,i)=>{if(i%paso===0||i===bp.length-1){const d=new Date(e.fecha);ctx.fillText(d.getDate()+'/'+(d.getMonth()+1),xP(i),H-6);}});
+}
+
+function dibujarPeso(pw){
+  const wrap=document.getElementById('pesoChartWrap');
+  if(pw.length<2){wrap.classList.remove('on');return;}
+  wrap.classList.add('on');
+  const canvas=document.getElementById('pesoChart');
+  canvas.width=canvas.offsetWidth||300;
+  const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
+  const PAD={top:20,right:16,bottom:28,left:40},gW=W-PAD.left-PAD.right,gH=H-PAD.top-PAD.bottom;
+  const vals=pw.map(e=>e.valor),minV=Math.min(...vals)-2,maxV=Math.max(...vals)+2,rng=maxV-minV;
+  const st=getComputedStyle(document.body);
+  const cB=st.getPropertyValue('--blue').trim(),cG=st.getPropertyValue('--green').trim(),cM=st.getPropertyValue('--muted').trim(),cBd=st.getPropertyValue('--border').trim();
+  ctx.clearRect(0,0,W,H);
+  function yP(v){return PAD.top+gH-((v-minV)/rng*gH);}
+  function xP(i){return PAD.left+(i/(pw.length-1))*gW;}
+  ctx.strokeStyle=cBd;ctx.lineWidth=0.5;
+  for(let i=0;i<=3;i++){const v=minV+(rng/3)*i;ctx.beginPath();ctx.moveTo(PAD.left,yP(v));ctx.lineTo(PAD.left+gW,yP(v));ctx.stroke();ctx.fillStyle=cM;ctx.font='9px DM Mono,monospace';ctx.textAlign='right';ctx.fillText(v.toFixed(1),PAD.left-4,yP(v)+3);}
+  // Área
+  const grad=ctx.createLinearGradient(0,PAD.top,0,PAD.top+gH);
+  grad.addColorStop(0,'rgba(59,127,196,0.15)');grad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=grad;ctx.beginPath();ctx.moveTo(xP(0),yP(vals[0]));vals.forEach((v,i)=>{if(i>0)ctx.lineTo(xP(i),yP(v));});ctx.lineTo(xP(vals.length-1),PAD.top+gH);ctx.lineTo(xP(0),PAD.top+gH);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=cB;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.beginPath();vals.forEach((v,i)=>i===0?ctx.moveTo(xP(i),yP(v)):ctx.lineTo(xP(i),yP(v)));ctx.stroke();
+  vals.forEach((v,i)=>{const color=i>0&&v<vals[i-1]?cG:cB;ctx.fillStyle=color;ctx.beginPath();ctx.arc(xP(i),yP(v),4,0,Math.PI*2);ctx.fill();ctx.fillStyle=cM;ctx.font='9px DM Mono,monospace';ctx.textAlign='center';ctx.fillText(v+'kg',xP(i),yP(v)-8);});
+  ctx.fillStyle=cM;ctx.font='9px DM Mono,monospace';ctx.textAlign='center';
+  const paso=Math.ceil(pw.length/5);pw.forEach((e,i)=>{if(i%paso===0||i===pw.length-1){const d=new Date(e.fecha);ctx.fillText(d.getDate()+'/'+(d.getMonth()+1),xP(i),H-6);}});
+}
+
+// ── MEDICAMENTOS ──────────────────────────────────────────────────────────────
+let editandoMedId=null;
+
+function abrirFormMed(){
+  editandoMedId=null;
+  cerrarFormMed();
+  document.getElementById('medFormWrap').querySelector('.med-form-ttl').textContent='💊 Nuevo medicamento';
+  document.getElementById('medFormWrap').classList.add('on');
+  document.getElementById('medNombre').focus();
+}
+
+function editarMedicamento(id){
+  const m=medicamentos.find(x=>x.id===id);
+  if(!m)return;
+  editandoMedId=id;
+  document.getElementById('medNombre').value=m.nombre;
+  document.getElementById('medDosis').value=m.dosis||'';
+  document.getElementById('esTratamiento').checked=m.tratamiento||false;
+  document.getElementById('tratamientoFechas').style.display=m.tratamiento?'flex':'none';
+  document.getElementById('fechaInicioMed').value=m.fechaInicio||'';
+  document.getElementById('fechaFinMed').value=m.fechaFin||'';
+  const hl=document.getElementById('horariosList');
+  hl.innerHTML=m.horarios.map((h,i)=>`
+    <div class="horario-item">
+      <span class="toma-lbl" style="font-size:11px;font-weight:700;color:var(--muted);min-width:46px">Toma ${i+1}</span>
+      <input type="time" value="${h}">
+      <button class="horario-del" onclick="quitarHorario(this)">✕</button>
+    </div>`).join('');
+  actualizarNumeroTomas();
+  document.getElementById('medFormWrap').querySelector('.med-form-ttl').textContent='✏️ Editar medicamento';
+  document.getElementById('medFormWrap').classList.add('on');
+  document.getElementById('medFormWrap').scrollIntoView({behavior:'smooth'});
+}
+
+function cerrarFormMed(){
+  editandoMedId=null;
+  document.getElementById('medFormWrap').classList.remove('on');
+  document.getElementById('medNombre').value='';
+  document.getElementById('medDosis').value='';
+  document.getElementById('esTratamiento').checked=false;
+  document.getElementById('tratamientoFechas').style.display='none';
+  document.getElementById('fechaInicioMed').value='';
+  document.getElementById('fechaFinMed').value='';
+  const hl=document.getElementById('horariosList');
+  hl.innerHTML='<div class="horario-item"><span class="toma-lbl" style="font-size:11px;font-weight:700;color:var(--muted);min-width:46px">Toma 1</span><input type="time" value="08:00"><button class="horario-del" onclick="quitarHorario(this)">✕</button></div>';
+  document.getElementById('btnAgregarToma').textContent='+ Toma 2';
+}
+
+document.addEventListener('change',e=>{
+  if(e.target.id==='esTratamiento')
+    document.getElementById('tratamientoFechas').style.display=e.target.checked?'flex':'none';
+});
+
+function actualizarNumeroTomas(){
+  const items=document.querySelectorAll('#horariosList .horario-item');
+  items.forEach((item,i)=>{const lbl=item.querySelector('.toma-lbl');if(lbl)lbl.textContent='Toma '+(i+1);});
+  document.getElementById('btnAgregarToma').textContent='+ Toma '+(items.length+1);
+}
+
+function agregarHorario(){
+  const hl=document.getElementById('horariosList');
+  const total=hl.children.length+1;
+  const div=document.createElement('div');
+  div.className='horario-item';
+  div.innerHTML=`<span class="toma-lbl" style="font-size:11px;font-weight:700;color:var(--muted);min-width:46px">Toma ${total}</span><input type="time" value="20:00"><button class="horario-del" onclick="quitarHorario(this)">✕</button>`;
+  hl.appendChild(div);
+  actualizarNumeroTomas();
+}
+
+function quitarHorario(btn){
+  const hl=document.getElementById('horariosList');
+  if(hl.children.length<=1){toast('Debe haber al menos una toma','e');return;}
+  btn.parentElement.remove();
+  actualizarNumeroTomas();
+}
+
+function guardarMedicamento(){
+  const nombre=document.getElementById('medNombre').value.trim();
+  const dosis=document.getElementById('medDosis').value.trim();
+  if(!nombre){toast('Escribe el nombre del medicamento','e');return;}
+  const horarios=[...document.querySelectorAll('#horariosList input[type=time]')].map(i=>i.value).filter(Boolean);
+  if(!horarios.length){toast('Agrega al menos una toma','e');return;}
+  const esTrat=document.getElementById('esTratamiento').checked;
+  const datos={nombre,dosis,horarios,tratamiento:esTrat,
+    fechaInicio:esTrat?document.getElementById('fechaInicioMed').value:null,
+    fechaFin:esTrat?document.getElementById('fechaFinMed').value:null};
+  if(editandoMedId){
+    medicamentos=medicamentos.map(m=>m.id===editandoMedId?{...m,...datos}:m);
+    toast('✓ Medicamento actualizado','s');
+  } else {
+    medicamentos.push({id:Date.now(),...datos,fecha:new Date().toISOString()});
+    toast('✓ Medicamento guardado','s');
+  }
+  localStorage.setItem('vr_med',JSON.stringify(medicamentos));
+  cerrarFormMed();
+  renderMedicamentos();
+}
+
+function eliminarMedicamento(id){
+  if(!confirm('¿Eliminar este medicamento?'))return;
+  medicamentos=medicamentos.filter(m=>m.id!==id);
+  localStorage.setItem('vr_med',JSON.stringify(medicamentos));
+  renderMedicamentos();
+  toast('Medicamento eliminado','');
+}
+
+function crearAlarma(nombre, hora){
+  const [h,m] = hora.split(':');
+  // Usar URL scheme que sí funciona en Android desde PWA
+  const url = `intent://alarm#Intent;action=android.intent.action.SET_ALARM;S.android.intent.extra.alarm.MESSAGE=Tomar ${encodeURIComponent(nombre)};i.android.intent.extra.alarm.HOUR=${parseInt(h)};i.android.intent.extra.alarm.MINUTES=${parseInt(m)};Z.android.intent.extra.alarm.SKIP_UI=false;scheme=content;package=com.android.deskclock;end`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.click();
+  // Fallback con instrucciones claras
+  setTimeout(()=>{
+    toast(`⏰ Alarma: ${hora} — ${nombre}`,'s');
+  }, 300);
+}
+
+function toggleHorariosMed(id){
+  const el = document.getElementById('horarios-'+id);
+  const btn = document.getElementById('toggle-'+id);
+  if(!el) return;
+  const visible = el.style.display !== 'none';
+  el.style.display = visible ? 'none' : 'block';
+  btn.textContent = visible ? '▶ Ver tomas' : '▼ Ocultar tomas';
+}
+
+function renderMedicamentos(){
+  const el = document.getElementById('listaMedicamentos');
+  if(!medicamentos.length){
+    el.innerHTML='<div class="empty">Sin medicamentos registrados.<br>Toca <strong>+ Agregar medicamento</strong></div>';
+    return;
+  }
+  el.innerHTML = medicamentos.map(m=>{
+    const hoy = new Date();
+    let tratInfo = '';
+    if(m.tratamiento && m.fechaFin){
+      const fin = new Date(m.fechaFin);
+      const dias = Math.ceil((fin-hoy)/(1000*60*60*24));
+      tratInfo = dias>0
+        ? `<div class="med-tratamiento">⏳ ${dias} días restantes</div>`
+        : `<div class="med-tratamiento" style="color:var(--red)">⚠️ Tratamiento finalizado</div>`;
+    }
+    const horariosHTML = m.horarios.map(h=>`
+      <div class="med-horario-row">
+        <span class="med-hora">${h}</span>
+        <button class="med-alarm-btn" onclick="crearAlarma('${m.nombre.replace(/'/g,"\\'")}','${h}')">⏰ Alarma</button>
+      </div>`).join('');
+
+    return`<div class="med-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div class="med-nombre">💊 ${m.nombre}</div>
+        <button id="toggle-${m.id}" onclick="toggleHorariosMed(${m.id})"
+          style="font-size:11px;font-weight:700;color:var(--accent);background:none;border:none;cursor:pointer;padding:4px 8px">
+          ▶ Ver tomas
+        </button>
+      </div>
+      ${m.dosis?`<div class="med-dosis">${m.dosis}</div>`:''}
+      ${tratInfo}
+      <div id="horarios-${m.id}" style="display:none">
+        <div class="med-horarios" style="margin-top:8px">${horariosHTML}</div>
+        <div class="med-actions" style="margin-top:8px">
+          <button class="med-del" style="background:rgba(26,143,196,.08);border-color:rgba(26,143,196,.3);color:var(--accent)" onclick="editarMedicamento(${m.id})">✏️ Editar</button>
+          <button class="med-del" onclick="eliminarMedicamento(${m.id})">🗑 Eliminar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function filterEco(tipo,fil,btn){document.querySelectorAll(`#tab-eco-${tipo} .fbtn`).forEach(b=>b.classList.remove('on'));btn.classList.add('on');if(tipo==='ingreso')renderIngresos(fil);}
+function setS(m,t){const el=document.getElementById('smsg');if(el){el.innerHTML=m;el.className='smsg'+(t?' '+t:'');}}
+let tt;
+function toast(m,t){const el=document.getElementById('toast');if(!el)return;el.textContent=m;el.className='toast on'+(t==='s'?' ts':t==='e'?' te':'');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('on'),2000);}
+(function(){
+  // Manifiesto dinámico
+  const manifest = {
+    name: 'VozRegistro',
+    short_name: 'VozReg',
+    start_url: location.href,
+    display: 'standalone',
+    background_color: '#e8f4fb',
+    theme_color: '#1a8fc4',
+    icons: [{
+      src: `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%231a8fc4'/><text y='380' x='80' font-size='340'>🎙</text></svg>`,
+      sizes: '512x512',
+      type: 'image/svg+xml',
+      purpose: 'any maskable'
+    }]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('link');
+  link.rel = 'manifest'; link.href = url;
+  document.head.appendChild(link);
+
+  // Service Worker inline
+  if('serviceWorker' in navigator){
+    const swCode = `
+self.addEventListener('install', e => self.skipWaiting());
+self.addEventListener('activate', e => clients.claim());
+self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+`;
+    const swBlob = new Blob([swCode], {type:'text/javascript'});
+    const swUrl = URL.createObjectURL(swBlob);
+    navigator.serviceWorker.register(swUrl).catch(()=>{});
+  }
+})();
+
+// ── NOTIFICACIONES MEDICAMENTOS ───────────────────────────────────────────────
+let notifEnviadas = {};
+
+function initNotificaciones(){
+  if(!('Notification' in window)) return;
+  if(Notification.permission === 'default'){
+    Notification.requestPermission();
+  }
+  setInterval(checkNotifMed, 30000);
+  checkNotifMed();
+}
+
+function checkNotifMed(){
+  if(Notification.permission !== 'granted') return;
+  if(!medicamentos.length) return;
+  const now = new Date();
+  const fechaHoy = now.toISOString().slice(0,10);
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const horaActual = `${hh}:${mm}`;
+  medicamentos.forEach(m => {
+    if(!m.horarios) return;
+    if(m.tratamiento && m.fechaFin && new Date(m.fechaFin) < now) return;
+    m.horarios.forEach(h => {
+      if(h === horaActual){
+        const id = `${m.id}_${fechaHoy}_${horaActual}`;
+        if(notifEnviadas[id]) return;
+        notifEnviadas[id] = true;
+        try{
+          new Notification(`💊 Hora de tomar ${m.nombre}`, {
+            body: m.dosis ? `Dosis: ${m.dosis}` : 'Recuerda tomar tu medicamento.',
+            tag: id,
+            icon: `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='85'>💊</text></svg>`
+          });
+        }catch(e){}
+      }
+    });
+  });
+}
+
+// ── BORRAR HISTORIAL ──────────────────────────────────────────────────────────
+function mostrarOpcionesBorrar(){
+  document.getElementById('borrarModal').classList.add('on');
+}
+function cerrarBorrarModal(){
+  document.getElementById('borrarModal').classList.remove('on');
+}
+function ejecutarBorrar(accion){
+  cerrarBorrarModal();
+  const labels = {
+    semana:'esta semana',mes:'este mes',
+    todo_fin:'todo el historial financiero',todo_sal:'todo el historial de salud'
+  };
+  if(!confirm(`¿Borrar ${labels[accion]}?\nNo se puede deshacer.`)) return;
+  const now = new Date();
+  const diaSem = now.getDay()===0?6:now.getDay()-1;
+  const inicioSem = new Date(now); inicioSem.setDate(now.getDate()-diaSem); inicioSem.setHours(0,0,0,0);
+  if(accion==='semana'){
+    finanzas=finanzas.filter(e=>new Date(e.fecha)<inicioSem);
+    salud=salud.filter(e=>new Date(e.fecha)<inicioSem);
+    actividad=actividad.filter(e=>new Date(e.fecha)<inicioSem);
+    localStorage.setItem('vr_fin',JSON.stringify(finanzas));
+    localStorage.setItem('vr_sal',JSON.stringify(salud));
+    localStorage.setItem('vr_act',JSON.stringify(actividad));
+  } else if(accion==='mes'){
+    finanzas=finanzas.filter(e=>!mesActual(e));
+    salud=salud.filter(e=>!mesActual(e));
+    actividad=actividad.filter(e=>!mesActual(e));
+    localStorage.setItem('vr_fin',JSON.stringify(finanzas));
+    localStorage.setItem('vr_sal',JSON.stringify(salud));
+    localStorage.setItem('vr_act',JSON.stringify(actividad));
+  } else if(accion==='todo_fin'){
+    finanzas=[];
+    localStorage.setItem('vr_fin','[]');
+  } else if(accion==='todo_sal'){
+    salud=[];
+    localStorage.setItem('vr_sal','[]');
+  } else if(accion==='todo_act'){
+    actividad=[];
+    localStorage.setItem('vr_act','[]');
+  }
+  mostrarSec(mainActual,subActual[mainActual]);
+  toast('✓ Historial borrado','s');
+}
+
+// ── PERFIL ────────────────────────────────────────────────────────────────────
+let perfil = JSON.parse(localStorage.getItem('vr_perfil') || '{}');
+let sangreSeleccionada = perfil.sangre || '';
+
+function abrirPerfil(){
+  renderPerfil();
+  verificarCumpleanos();
+  document.getElementById('perfilOverlay').classList.add('on');
+  document.getElementById('perfilVista').style.display='block';
+  document.getElementById('perfilForm').classList.remove('on');
+}
+
+function cerrarPerfil(){
+  document.getElementById('perfilOverlay').classList.remove('on');
+}
+
+function mostrarFormPerfil(){
+  // Cargar datos actuales en el form
+  document.getElementById('pfNombre').value = perfil.nombre || '';
+  document.getElementById('pfNacimiento').value = perfil.nacimiento || '';
+  document.getElementById('pfEstatura').value = perfil.estatura || '';
+  document.getElementById('pfPeso').value = perfil.peso || '';
+  document.getElementById('pfAlergias').value = perfil.alergias || '';
+  document.getElementById('pfCondicion').value = perfil.condicion || '';
+  document.getElementById('pfMedico').value = perfil.medico || '';
+  document.getElementById('pfTelEmergencia').value = perfil.telEmergencia || '';
+  // Tipo de sangre
+  sangreSeleccionada = perfil.sangre || '';
+  document.querySelectorAll('.blood-btn').forEach(b=>{
+    b.classList.toggle('on', b.textContent === sangreSeleccionada);
+  });
+  document.getElementById('perfilVista').style.display='none';
+  document.getElementById('perfilForm').classList.add('on');
+}
+
+function cancelarFormPerfil(){
+  document.getElementById('perfilVista').style.display='block';
+  document.getElementById('perfilForm').classList.remove('on');
+}
+
+function selSangre(tipo, btn){
+  sangreSeleccionada = tipo;
+  document.querySelectorAll('.blood-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+function guardarPerfil(){
+  perfil.nombre      = document.getElementById('pfNombre').value.trim() || perfil.nombre;
+  perfil.nacimiento  = document.getElementById('pfNacimiento').value;
+  perfil.estatura    = parseFloat(document.getElementById('pfEstatura').value) || perfil.estatura;
+  perfil.peso        = parseFloat(document.getElementById('pfPeso').value) || perfil.peso;
+  perfil.sangre      = sangreSeleccionada;
+  perfil.alergias    = document.getElementById('pfAlergias').value.trim();
+  perfil.condicion   = document.getElementById('pfCondicion').value.trim();
+  perfil.medico      = document.getElementById('pfMedico').value.trim();
+  perfil.telEmergencia = document.getElementById('pfTelEmergencia').value.trim();
+  localStorage.setItem('vr_perfil', JSON.stringify(perfil));
+  // Actualizar nombre en header
+  if(perfil.nombre){
+    document.getElementById('headerNombre').textContent = perfil.nombre;
+    document.getElementById('perfilNombreVista').textContent = perfil.nombre;
+  }
+  cancelarFormPerfil();
+  renderPerfil();
+  toast('✓ Perfil guardado','s');
+}
+
+function calcularEdad(nacimiento){
+  if(!nacimiento) return null;
+  const hoy = new Date();
+  const nac = new Date(nacimiento);
+  let edad = hoy.getFullYear() - nac.getFullYear();
+  const m = hoy.getMonth() - nac.getMonth();
+  if(m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+  return edad;
+}
+
+function calcularIMC(peso, estatura){
+  if(!peso || !estatura) return null;
+  const h = estatura / 100;
+  return (peso / (h * h)).toFixed(1);
+}
+
+function clasificarIMC(imc){
+  if(!imc) return null;
+  const v = parseFloat(imc);
+  if(v < 18.5) return { texto: `IMC ${imc} — Bajo peso`, clase: 'warn' };
+  if(v < 25)   return { texto: `IMC ${imc} — Normal ✓`, clase: 'ok' };
+  if(v < 30)   return { texto: `IMC ${imc} — Sobrepeso`, clase: 'warn' };
+  return       { texto: `IMC ${imc} — Obesidad`, clase: 'high' };
+}
+
+function verificarCumpleanos(){
+  if(!perfil.nacimiento) return;
+  const hoy = new Date();
+  const nac = new Date(perfil.nacimiento);
+  const banner = document.getElementById('birthdayBanner');
+  const txt = document.getElementById('birthdayTxt');
+  const mismoMes = nac.getMonth() === hoy.getMonth();
+  const mismoDia = nac.getDate() === hoy.getDate();
+  const manana = new Date(hoy); manana.setDate(hoy.getDate() + 1);
+  const mananaMs = nac.getMonth() === manana.getMonth() && nac.getDate() === manana.getDate();
+  if(mismoMes && mismoDia){
+    banner.classList.add('on');
+    txt.textContent = `¡Feliz cumpleaños, ${perfil.nombre||''}! 🎉 Que tengas un gran día.`;
+  } else if(mananaMs){
+    banner.classList.add('on');
+    txt.textContent = `¡Mañana es tu cumpleaños! 🎂 Prepárate para celebrar.`;
+  } else {
+    banner.classList.remove('on');
+  }
+}
+
+function renderPerfil(){
+  const edad = calcularEdad(perfil.nacimiento);
+  const imc  = calcularIMC(perfil.peso, perfil.estatura);
+  const imcInfo = clasificarIMC(imc);
+
+  document.getElementById('pEdad').textContent = edad ? edad + ' años' : '—';
+  document.getElementById('pNac').textContent = perfil.nacimiento
+    ? new Date(perfil.nacimiento).toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'}) : '—';
+  document.getElementById('pEstatura').textContent = perfil.estatura ? perfil.estatura + ' cm' : '—';
+  document.getElementById('pPeso').textContent = perfil.peso ? perfil.peso + ' kg' : '—';
+  document.getElementById('pSangre').textContent = perfil.sangre || '—';
+  document.getElementById('pCondicion').textContent = perfil.condicion || '—';
+  document.getElementById('pAlergias').textContent = perfil.alergias || '—';
+  document.getElementById('pMedico').textContent = perfil.medico || '—';
+  document.getElementById('pTelEmergencia').textContent = perfil.telEmergencia || '—';
+
+  const imcEl = document.getElementById('perfilIMC');
+  if(imcInfo){
+    imcEl.textContent = imcInfo.texto;
+    imcEl.className = 'perfil-field-val perfil-imc ' + imcInfo.clase;
+  } else {
+    imcEl.textContent = '—';
+    imcEl.className = 'perfil-field-val';
+  }
+
+  if(perfil.nombre){
+    document.getElementById('headerNombre').textContent = perfil.nombre;
+    document.getElementById('perfilNombreVista').textContent = perfil.nombre;
+  }
+}
+
+function irEmergenciaAndroid(){
+  // Abre la configuración de información de emergencia de Android
+  window.location.href = 'intent:#Intent;action=android.settings.USER_DICTIONARY_SETTINGS;end';
+  setTimeout(()=>{
+    toast('Ve a Ajustes → Acerca del teléfono → Info de emergencia','');
+  }, 500);
+}
+
+function cargarFoto(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = e.target.result;
+    localStorage.setItem('vr_foto', data);
+    mostrarFoto(data);
+  };
+  reader.readAsDataURL(file);
+}
+
+function mostrarFoto(data){
+  // Header pequeño
+  const img = document.getElementById('fotoImg');
+  const emoji = document.getElementById('fotoEmoji');
+  img.src = data; img.style.display = 'block'; emoji.style.display = 'none';
+  // Perfil grande
+  const img2 = document.getElementById('perfilFotoImg');
+  const emoji2 = document.getElementById('perfilFotoEmoji');
+  img2.src = data; img2.style.display = 'block'; emoji2.style.display = 'none';
+}
+
+function cargarFotoGuardada(){
+  const data = localStorage.getItem('vr_foto');
+  if(data) mostrarFoto(data);
+  if(perfil.nombre) document.getElementById('headerNombre').textContent = perfil.nombre;
+  // Verificar cumpleaños al abrir la app
+  verificarCumpleanos();
+}
+
+// EDITAR MONTO
+let editandoId=null, editandoTipo=null;
+function abrirEdicion(id, tipo, concepto, montoActual){
+  editandoId=id; editandoTipo=tipo;
+  document.getElementById('editConcepto').textContent=concepto;
+  document.getElementById('editMonto').value=montoActual;
+  document.getElementById('editModalBg').classList.add('on');
+  setTimeout(()=>document.getElementById('editMonto').focus(),100);
+}
+function cerrarEdicion(){
+  editandoId=null; editandoTipo=null;
+  document.getElementById('editModalBg').classList.remove('on');
+  document.getElementById('editMonto').value='';
+}
+function guardarEdicion(){
+  const nuevo=parseFloat(document.getElementById('editMonto').value);
+  if(isNaN(nuevo)||nuevo<=0){toast('Ingresa un monto válido','e');return;}
+  if(editandoTipo==='fin'){
+    finanzas=finanzas.map(e=>e.id===editandoId?{...e,monto:nuevo}:e);
+    localStorage.setItem('vr_fin',JSON.stringify(finanzas));
+  }
+  cerrarEdicion();
+  mostrarSec(mainActual, subActual[mainActual]);
+  toast('✓ Monto corregido','s');
+}
+</script>
+</body>
+</html>
