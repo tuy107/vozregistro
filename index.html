@@ -699,10 +699,11 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
       </div>
     </div>
   </div>
-  <div class="sec-ttl" style="display:flex;justify-content:space-between;align-items:center">Historial
-    <div style="display:flex;gap:10px;align-items:center">
-      <button onclick="imprimirPresion()" style="font-size:11px;font-weight:700;color:var(--accent);background:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;text-decoration:underline">🖨 Imprimir</button>
-      <button onclick="mostrarOpcionesBorrar()" style="font-size:11px;font-weight:700;color:var(--red);background:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;text-decoration:underline">🗑 Borrar</button>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div class="sec-ttl" style="margin-bottom:0">Historial</div>
+    <div style="display:flex;gap:8px">
+      <button onclick="imprimirPresion()" style="font-size:13px;font-weight:700;color:var(--accent);background:rgba(26,143,196,.12);border:1.5px solid var(--accent);border-radius:20px;padding:6px 14px;cursor:pointer;font-family:'Nunito',sans-serif">🖨 Imprimir</button>
+      <button onclick="mostrarOpcionesBorrar()" style="font-size:13px;font-weight:700;color:var(--red);background:rgba(224,69,90,.10);border:1.5px solid var(--red);border-radius:20px;padding:6px 14px;cursor:pointer;font-family:'Nunito',sans-serif">🗑 Borrar</button>
     </div>
   </div>
   <div class="elist" id="listaBP"><div class="empty">Sin mediciones.<br>Di <strong>"presión 120 sobre 80"</strong></div></div>
