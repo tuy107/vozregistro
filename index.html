@@ -755,6 +755,17 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 
 <div class="toast" id="toast"></div>
 
+<!-- MODAL ALARMA MEDICAMENTO -->
+<div class="edit-modal-bg" id="alarmaModal">
+  <div class="edit-modal" style="text-align:center" onclick="event.stopPropagation()">
+    <div style="font-size:52px;margin-bottom:8px;animation:heart-beat 1.5s ease infinite">💊</div>
+    <div class="edit-modal-ttl" style="font-size:15px;color:var(--accent)">Hora de tu medicamento</div>
+    <div class="edit-modal-conc" id="alarmaModalNombre" style="font-size:17px;margin:10px 0 6px">—</div>
+    <div id="alarmaModalDosis" style="font-size:12px;color:var(--muted);margin-bottom:16px"></div>
+    <button class="btn btnok" style="width:100%;padding:14px;font-size:14px" onclick="cerrarAlarmaModal()">✓ Ya lo tomé</button>
+  </div>
+</div>
+
 <script>
 // ── DATOS ─────────────────────────────────────────────────────────────────────
 let finanzas   = JSON.parse(localStorage.getItem('vr_fin')   ||'[]');
@@ -1889,16 +1900,50 @@ function eliminarMedicamento(id){
 }
 
 function crearAlarma(nombre, hora){
-  const [h,m] = hora.split(':');
-  // Usar URL scheme que sí funciona en Android desde PWA
-  const url = `intent://alarm#Intent;action=android.intent.action.SET_ALARM;S.android.intent.extra.alarm.MESSAGE=Tomar ${encodeURIComponent(nombre)};i.android.intent.extra.alarm.HOUR=${parseInt(h)};i.android.intent.extra.alarm.MINUTES=${parseInt(m)};Z.android.intent.extra.alarm.SKIP_UI=false;scheme=content;package=com.android.deskclock;end`;
-  const a = document.createElement('a');
-  a.href = url;
-  a.click();
-  // Fallback con instrucciones claras
-  setTimeout(()=>{
-    toast(`⏰ Alarma: ${hora} — ${nombre}`,'s');
-  }, 300);
+  if(!('Notification' in window)){toast('Tu navegador no soporta notificaciones','e');return;}
+  if(Notification.permission === 'granted'){
+    new Notification('✅ Alarma activada',{body:`Te avisaremos a las ${hora} para tomar ${nombre}`,tag:'alarm-set-'+nombre+hora});
+    toast(`✓ Alarma activada: ${hora} — ${nombre}`,'s');
+  } else if(Notification.permission === 'default'){
+    Notification.requestPermission().then(p=>{
+      if(p==='granted'){
+        new Notification('✅ Alarma activada',{body:`Te avisaremos a las ${hora} para tomar ${nombre}`,tag:'alarm-set-'+nombre+hora});
+        toast(`✓ Permiso concedido. Alarma: ${hora} — ${nombre}`,'s');
+      } else {
+        toast('Permiso denegado — la alarma solo sonará con la app abierta','e');
+      }
+    });
+  } else {
+    toast('Activa las notificaciones en ajustes del navegador','e');
+  }
+}
+
+function sonarAlarma(){
+  try{
+    const ctx=getAudio();
+    [0,.45,.9,1.35,1.8].forEach(d=>{
+      const osc=ctx.createOscillator(),g=ctx.createGain();
+      osc.type='sine';osc.frequency.value=880;
+      g.gain.setValueAtTime(0.6,ctx.currentTime+d);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+d+0.35);
+      osc.connect(g);g.connect(ctx.destination);
+      osc.start(ctx.currentTime+d);osc.stop(ctx.currentTime+d+0.35);
+    });
+  }catch(e){}
+}
+
+function mostrarAlarmaModal(nombre, dosis){
+  document.getElementById('alarmaModalNombre').textContent=nombre;
+  document.getElementById('alarmaModalDosis').textContent=dosis?'Dosis: '+dosis:'';
+  document.getElementById('alarmaModal').classList.add('on');
+  sonarAlarma();
+  // Repetir sonido cada 8 segundos hasta que cierren
+  window._alarmaInterval=setInterval(sonarAlarma,8000);
+}
+
+function cerrarAlarmaModal(){
+  document.getElementById('alarmaModal').classList.remove('on');
+  clearInterval(window._alarmaInterval);
 }
 
 function toggleHorariosMed(id){
@@ -2019,13 +2064,12 @@ function checkNotifMed(){
         const id = `${m.id}_${fechaHoy}_${horaActual}`;
         if(notifEnviadas[id]) return;
         notifEnviadas[id] = true;
-        try{
-          new Notification(`💊 Hora de tomar ${m.nombre}`, {
-            body: m.dosis ? `Dosis: ${m.dosis}` : 'Recuerda tomar tu medicamento.',
-            tag: id,
-            icon: `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='85'>💊</text></svg>`
-          });
-        }catch(e){}
+        // Notificación del sistema
+        if(Notification.permission==='granted'){
+          try{new Notification(`💊 Hora de tomar ${m.nombre}`,{body:m.dosis?`Dosis: ${m.dosis}`:'Recuerda tomar tu medicamento.',tag:id});}catch(e){}
+        }
+        // Alarma en pantalla + sonido (siempre, aunque la app esté abierta)
+        mostrarAlarmaModal(m.nombre, m.dosis||'');
       }
     });
   });
