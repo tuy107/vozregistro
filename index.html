@@ -2152,20 +2152,22 @@ function imprimirPresion(){
   }).join('');
   const win=window.open('','_blank','width=800,height=600');
   win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Historial de Presión – ${nombre}</title>
 <style>
-  body{font-family:Arial,sans-serif;padding:24px;color:#1a2e3d}
-  h1{font-size:20px;margin-bottom:4px}
-  p{font-size:12px;color:#666;margin-bottom:16px}
+  body{font-family:Arial,sans-serif;padding:16px;color:#1a2e3d;font-size:15px}
+  h1{font-size:18px;margin-bottom:4px}
+  p{font-size:13px;color:#666;margin-bottom:14px}
   table{width:100%;border-collapse:collapse;font-size:13px}
-  th{background:#1a8fc4;color:#fff;padding:8px 10px;text-align:left}
-  td{padding:7px 10px;border-bottom:1px solid #ddd}
+  th{background:#1a8fc4;color:#fff;padding:9px 8px;text-align:left;font-size:12px}
+  td{padding:8px;border-bottom:1px solid #ddd}
   tr:nth-child(even){background:#f4f9fd}
-  @media print{button{display:none}}
+  .btn-print{display:block;width:100%;margin-bottom:14px;padding:13px;background:#1a8fc4;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:15px;font-weight:700}
+  @media print{.btn-print{display:none}}
 </style></head><body>
 <h1>📊 Historial de Presión Arterial</h1>
 <p>Paciente: <strong>${nombre}</strong> &nbsp;|&nbsp; Generado: ${new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'})}</p>
-<button onclick="window.print()" style="margin-bottom:14px;padding:8px 18px;background:#1a8fc4;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px">🖨 Imprimir / Guardar PDF</button>
+<button class="btn-print" onclick="window.print()">🖨 Imprimir / Guardar PDF</button>
 <table><thead><tr><th>Fecha</th><th>Hora</th><th>Sistólica</th><th>Diastólica</th><th>Pulso</th><th>Estado</th></tr></thead>
 <tbody>${filas}</tbody></table>
 </body></html>`);
