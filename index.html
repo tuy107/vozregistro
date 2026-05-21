@@ -1018,6 +1018,11 @@ function detectarTipo(t){
   // Ingreso
   if(/me pagaron|me pag[oó]|cobr[eé]|ingres[eé]|\bingreso\b|\bingresos\b|gan[eé]|recibi[oó]|me deposit|entr[oó]|me entr/.test(txt)) return 'ingreso';
 
+  // Actividad por tiempo o distancia sin contexto financiero
+  const tiempoDistancia = /\bminutos?\b|\bmetros?\b|\bkm\b|\bkil[oó]metros?\b|\bhoras?\b|\breps?\b|\brepeticiones?\b|\bseries?\b/.test(txt);
+  const esFinanciero = /pesos?|mxn|\$|gast[eé]|pagu[eé]|compr[eé]|cobr[eé]|ingreso|egreso|debo|renta|luz|agua/.test(txt);
+  if(tiempoDistancia && !esFinanciero) return 'actividad';
+
   // Egreso explícito
   if(/\begreso\b|\begresos\b|gast[eé]|gasté|compré|compr[eé]|pagu[eé]|pagué|sali[oó]/.test(txt) && nums) return 'egreso';
 
