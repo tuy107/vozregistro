@@ -1087,7 +1087,9 @@ function parsearTexto(t, tipo){
   if(tipo==='actividad'){
     const desc=limpiarConcepto(t);
     const dist=nums?parseFloat(nums[0].replace(',','.')):null;
-    return{descripcion:desc,distancia:dist};
+    const txt2=t.toLowerCase();
+    const unidad=/\bkm\b|\bkil[oó]metros?\b/.test(txt2)?'km':/\bmetros?\b/.test(txt2)?'m':/\bminutos?\b/.test(txt2)?'min':/\bhoras?\b/.test(txt2)?'h':/\breps?\b|\brepeticiones?\b/.test(txt2)?'reps':/\bseries?\b/.test(txt2)?'series':dist?'km':'';
+    return{descripcion:desc,distancia:dist,unidad};
   }
   if(!nums) return null;
   const monto=Math.max(...nums.map(n=>parseFloat(n.replace(',','.'))));
@@ -1129,7 +1131,7 @@ function showPrev(d, tipo){
     document.getElementById('pTipo').textContent='🏃 ACTIVIDAD';
     document.getElementById('pTipo').className='pval actividad';
     document.getElementById('pConc').textContent=d.descripcion||'—';
-    document.getElementById('pVal').textContent=d.distancia?d.distancia+' km/min':'—';
+    document.getElementById('pVal').textContent=d.distancia?(d.distancia+(d.unidad?' '+d.unidad:'')):'—';
   }
   document.getElementById('prev').classList.add('on');
 }
@@ -1684,7 +1686,7 @@ function renderActividad(){
     <div class="ei" onclick="this.classList.toggle('sd')">
       <div class="edot actividad"></div>
       <div class="einf"><div class="econc">🏃 ${e.descripcion}</div><div class="etim">${fmtFecha(e.fecha)}${e.distancia?' · '+e.distancia+' km':''}</div></div>
-      <div class="eamt actividad">${e.distancia?e.distancia+'km':'—'}</div>
+      <div class="eamt actividad">${e.distancia?(e.distancia+(e.unidad?' '+e.unidad:'')):'—'}</div>
       <button class="delbtn" onclick="event.stopPropagation();eliminar(${e.id},'act')">🗑 Borrar</button>
     </div>`).join('');
 }
