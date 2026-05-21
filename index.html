@@ -299,7 +299,6 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
     </div>
   </div>
   <div class="header-right">
-    <button onclick="location.reload()" style="width:42px;height:42px;border-radius:50%;background:var(--surface);border:2px solid var(--border);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)" title="Refrescar">🔄</button>
     <button class="tcycle" id="tcycle" onclick="cycleTheme()">☀️</button>
   </div>
 </div>
@@ -1014,7 +1013,7 @@ function detectarTipo(t){
   if(/\bpeso\b|\bkilos?\b|\bkg\b/.test(txt) && nums) return 'peso';
 
   // Actividad física
-  if(/nad[eé]|nadar|swim|piscina|alberca|mariposa|pecho libre|espalda|corr[ií]|correr|biciclet|pedale|ejerci|entrena|gym|gimnas/.test(txt)) return 'actividad';
+  if(/nad[eé]|nadar|nataci[oó]n|swim|piscina|alberca|mariposa|pecho libre|espalda|corr[ií]|correr|biciclet|pedale|ejerci|entrena|gym|gimnas|salt[eé]|saltar|brinc|bail[eé]|bailar|danz|camina|camin[eé]|yoga|pilates|pesas|levant|cardio|aerobic|trote|trot[eé]|jog|zumba|boxe|futbol|basket|tenis|volei|subi[oó]|escal[eé]|escalar|crosfitcrossfit|stretching/.test(txt)) return 'actividad';
 
   // Ingreso
   if(/me pagaron|me pag[oó]|cobr[eé]|ingres[eé]|\bingreso\b|\bingresos\b|gan[eé]|recibi[oó]|me deposit|entr[oó]|me entr/.test(txt)) return 'ingreso';
