@@ -356,6 +356,17 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 
     <button class="perfil-edit-btn" onclick="mostrarFormPerfil()">✏️ Editar perfil</button>
     <button class="perfil-emergency-btn" onclick="irEmergenciaAndroid()">🆘 Configurar info de emergencia en Android</button>
+
+    <!-- RESPALDO -->
+    <div class="perfil-section-ttl" style="margin-bottom:8px">Respaldo de datos</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <button class="btn" onclick="exportarDatos()" style="border-color:var(--accent);color:var(--accent);background:rgba(26,143,196,.08);padding:12px">📤 Exportar</button>
+      <label class="btn" style="border-color:var(--green);color:var(--green);background:rgba(29,168,110,.08);text-align:center;cursor:pointer;padding:12px">
+        📥 Importar<input type="file" accept=".json" style="display:none" onchange="importarDatos(event)">
+      </label>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:14px;text-align:center;font-weight:600">Exporta para respaldar o mover datos a otro dispositivo</div>
+
     <button class="perfil-close" onclick="cerrarPerfil()">Cerrar</button>
   </div>
 
@@ -664,6 +675,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
     <button onclick="mostrarOpcionesBorrar()" style="font-size:11px;font-weight:700;color:var(--red);background:none;border:none;cursor:pointer;padding:4px 8px">🗑 Borrar historial</button>
   </div>
   <div class="elist" id="listaReciente"><div class="empty">Sin registros.</div></div>
+
   <div class="bot"></div>
 </div>
 
@@ -687,7 +699,12 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
       </div>
     </div>
   </div>
-  <div class="sec-ttl" style="display:flex;justify-content:space-between;align-items:center">Historial<button onclick="mostrarOpcionesBorrar()" style="font-size:11px;font-weight:700;color:var(--red);background:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;text-decoration:underline">🗑 Borrar</button></div>
+  <div class="sec-ttl" style="display:flex;justify-content:space-between;align-items:center">Historial
+    <div style="display:flex;gap:10px;align-items:center">
+      <button onclick="imprimirPresion()" style="font-size:11px;font-weight:700;color:var(--accent);background:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;text-decoration:underline">🖨 Imprimir</button>
+      <button onclick="mostrarOpcionesBorrar()" style="font-size:11px;font-weight:700;color:var(--red);background:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;text-decoration:underline">🗑 Borrar</button>
+    </div>
+  </div>
   <div class="elist" id="listaBP"><div class="empty">Sin mediciones.<br>Di <strong>"presión 120 sobre 80"</strong></div></div>
   <div class="bot"></div>
 </div>
@@ -2073,6 +2090,86 @@ function checkNotifMed(){
       }
     });
   });
+}
+
+// ── EXPORTAR / IMPORTAR ───────────────────────────────────────────────────────
+function exportarDatos(){
+  const datos={
+    finanzas,salud,actividad,medicamentos,modulos,
+    presupuesto,perfil,
+    tema:localStorage.getItem('vr_t')||'morning',
+    exportado:new Date().toISOString(),
+    version:'1.0'
+  };
+  const blob=new Blob([JSON.stringify(datos,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const fecha=new Date().toISOString().slice(0,10);
+  a.href=url;a.download=`vozregistro-${fecha}.json`;a.click();
+  URL.revokeObjectURL(url);
+  toast('✓ Datos exportados','s');
+}
+
+function importarDatos(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const datos=JSON.parse(e.target.result);
+      if(!confirm('¿Importar datos? Esto reemplazará todo lo que tienes actualmente.'))return;
+      if(datos.finanzas)   {finanzas=datos.finanzas;   localStorage.setItem('vr_fin',JSON.stringify(finanzas));}
+      if(datos.salud)      {salud=datos.salud;          localStorage.setItem('vr_sal',JSON.stringify(salud));}
+      if(datos.actividad)  {actividad=datos.actividad;  localStorage.setItem('vr_act',JSON.stringify(actividad));}
+      if(datos.medicamentos){medicamentos=datos.medicamentos;localStorage.setItem('vr_med',JSON.stringify(medicamentos));}
+      if(datos.modulos)    {modulos=datos.modulos;      localStorage.setItem('vr_mod',JSON.stringify(modulos));}
+      if(datos.presupuesto){presupuesto=datos.presupuesto;localStorage.setItem('vr_pres',datos.presupuesto);}
+      if(datos.perfil)     {perfil=datos.perfil;        localStorage.setItem('vr_perfil',JSON.stringify(perfil));}
+      if(datos.tema)       applyTheme(datos.tema);
+      aplicarModulos();
+      mostrarSec(mainActual,subActual[mainActual]);
+      toast('✓ Datos importados correctamente','s');
+    }catch(err){toast('Error al leer el archivo','e');}
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
+// ── IMPRIMIR PRESIÓN ─────────────────────────────────────────────────────────
+function imprimirPresion(){
+  const datos=salud.filter(r=>r.tipo==='presion').sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+  if(!datos.length){toast('Sin datos de presión','e');return;}
+  const nombre=perfil.nombre||'Usuario';
+  const filas=datos.map(r=>{
+    const d=new Date(r.fecha);
+    const fStr=d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'});
+    const hStr=d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+    const s=r.sistolica,di=r.diastolica;
+    let est='Normal',color='#1aa86e';
+    if(s>=140||di>=90){est='Alta';color='#e07a30';}
+    else if(s<90||di<60){est='Baja';color='#7a9aae';}
+    return `<tr><td>${fStr}</td><td>${hStr}</td><td style="font-weight:700">${s}</td><td style="font-weight:700">${di}</td><td>${r.pulso||'—'}</td><td style="color:${color};font-weight:700">${est}</td></tr>`;
+  }).join('');
+  const win=window.open('','_blank','width=800,height=600');
+  win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>Historial de Presión – ${nombre}</title>
+<style>
+  body{font-family:Arial,sans-serif;padding:24px;color:#1a2e3d}
+  h1{font-size:20px;margin-bottom:4px}
+  p{font-size:12px;color:#666;margin-bottom:16px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:#1a8fc4;color:#fff;padding:8px 10px;text-align:left}
+  td{padding:7px 10px;border-bottom:1px solid #ddd}
+  tr:nth-child(even){background:#f4f9fd}
+  @media print{button{display:none}}
+</style></head><body>
+<h1>📊 Historial de Presión Arterial</h1>
+<p>Paciente: <strong>${nombre}</strong> &nbsp;|&nbsp; Generado: ${new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'})}</p>
+<button onclick="window.print()" style="margin-bottom:14px;padding:8px 18px;background:#1a8fc4;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px">🖨 Imprimir / Guardar PDF</button>
+<table><thead><tr><th>Fecha</th><th>Hora</th><th>Sistólica</th><th>Diastólica</th><th>Pulso</th><th>Estado</th></tr></thead>
+<tbody>${filas}</tbody></table>
+</body></html>`);
+  win.document.close();
 }
 
 // ── BORRAR HISTORIAL ──────────────────────────────────────────────────────────
